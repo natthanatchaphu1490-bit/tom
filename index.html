@@ -416,6 +416,7 @@
       <details><summary>ข้อมูลแบรนด์ของฉันไปไหน?</summary><div class="muted">อยู่ในเครื่องคุณเท่านั้น (IndexedDB ผ่าน kv-plugin) ไม่ส่งไปเซิร์ฟเวอร์อื่น ลบได้ด้วยปุ่ม “ล้างความจำ”</div></details>
       <details><summary>ภาพที่สร้างเอาไปใช้เชิงพาณิชย์ได้ไหม?</summary><div class="muted">โดยทั่วไปทำได้ แต่ควรตรวจเงื่อนไขโมเดล/แพลตฟอร์มอีกครั้งสำหรับงานสำคัญ และอย่าใช้ภาพที่มีโลโก้แบรนด์คนอื่นหรือใบหน้าบุคคลจริงโดยไม่ได้รับอนุญาต</div></details>
       <details><summary>กดสร้างแล้วหมุนนาน / ขึ้น error ทำไง?</summary><div class="muted">รอ 10–60 วินาทีแล้วลองใหม่ อย่ากดรัวๆ เพราะคิวต่อคนมีจำกัด ถ้ายังไม่ได้ให้ลดความยาว prompt หรือเปลี่ยนสัดส่วนภาพแล้วลองอีกครั้ง</div></details>
+      <details><summary>เอาเว็บไปไว้โฮสต์ตัวเองแล้ว AI ไม่มา?</summary><div class="muted">AI หลัก (generateText/generateImage) เป็นปลั๊กอินของ Perchance ใช้ได้เฉพาะตอนรันบน perchance.org เท่านั้น ถ้าก๊อปแค่ HTML ไปโฮสต์เองจะไม่มีให้ใช้ — วิธีที่ถูกคือ (1) ใช้ลิงก์หน้าเว็บที่เซฟแล้วบน perchance.org ตรงๆ หรือ (2) ฝังด้วย iframe: &lt;iframe src="https://null.perchance.org/ชื่อเว็บคุณ" style="width:100%;height:900px;border:0"&gt;&lt;/iframe&gt; (เปลี่ยนชื่อเว็บคุณ) • ถ้ารันนอก Perchance เว็บนี้จะสลับไปใช้ AI สำรอง (Pollinations ฟรี) ให้อัตโนมัติ คุณภาพอาจต่างจากตัวหลัก ดูป้ายมุมขวาบน: 🟢=ตัวหลักพร้อม 🌐=โหมดเว็บนอก</div></details>
     </div>
   </section>
 
@@ -436,6 +437,36 @@
 (function(){
   const $ = (id)=>document.getElementById(id);
   // Plugin resolver แบบทนทาน: รอ import โหลดอัตโนมัติ ไม่ต้องรีเฟรช ไม่ใช้ alert
+  // หมายเหตุสำคัญ: generateText/generateImage/kv เป็นปลั๊กอินของ Perchance engine
+  // มีให้ใช้เฉพาะตอนรันบน perchance.org (พรีวิว + หน้าเว็บที่เซฟแล้ว + iframe ฝังจาก perchance)
+  // ถ้าก๊อปแค่ HTML ไปโฮสต์เอง root จะไม่มี → ต้องใช้โหมด fallback ด้านล่างแทน
+  function isPerchanceEnv(){
+    try{
+      if(typeof root!=="undefined"&&!!root) return true;
+      if(typeof window!=="undefined"&&window.generatorName) return true;
+      if(typeof location!=="undefined"&&/perchance\.org$/.test(location.hostname)) return true;
+    }catch(e){}
+    return false;
+  }
+  // Fallback ข้ามเว็บ: ใช้ Pollinations ฟรี ไม่ต้องมีคีย์ (คุณภาพ/เงื่อนไขตามผู้ให้บริการ)
+  async function pollinationsText(instruction, onChunk){
+    const url="https://text.pollinations.ai/"+encodeURIComponent(String(instruction).slice(0,4000));
+    const ctrl=new AbortController();
+    const to=setTimeout(()=>ctrl.abort(),90000);
+    try{
+      const res=await fetch(url,{signal:ctrl.signal,headers:{Accept:"text/plain"}});
+      clearTimeout(to);
+      if(!res.ok) throw new Error("HTTP "+res.status);
+      const txt=await res.text();
+      if(onChunk) try{ onChunk({fullTextSoFar:txt,textChunk:txt}); }catch(e){}
+      return {text:txt};
+    }catch(e){ clearTimeout(to); throw e; }
+  }
+  function pollinationsImageUrl(prompt, ratio){
+    const p=encodeURIComponent(String(prompt).slice(0,1500));
+    const wh=(ratio==="512x768")?"width=512&height=768":(ratio==="768x512")?"width=768&height=512":(ratio==="768x768")?"width=768&height=768":"width=768&height=768";
+    return `https://image.pollinations.ai/prompt/${p}?${wh}&nologo=true`;
+  }
   function plug(name){
     try{ if(typeof root!=="undefined"&&root&&root[name]!==undefined&&root[name]!==null) return root[name]; }catch(e){}
     try{ if(typeof globalThis!=="undefined"&&globalThis[name]!==undefined) return globalThis[name]; }catch(e){}
@@ -463,6 +494,12 @@
   function updatePlugPill(){
     const pill=$("plugPill");
     if(!pill) return;
+    if(!isPerchanceEnv()){
+      pill.textContent="🌐 โหมดเว็บนอก — ใช้ AI สำรอง";
+      pill.style.background="#334155"; pill.style.color="#fff";
+      pill.title="รันนอก perchance.org — ปลั๊กอิน Perchance ไม่มี ใช้ AI สำรองแทน (ดูวิธีฝังที่ถูกต้องใน FAQ)";
+      return;
+    }
     const t=!!plug("generateText"), i=!!plug("generateImage"), k=!!plug("kv");
     plugState.ready={generateText:t,generateImage:i,kv:k};
     if(t&&i&&k){ pill.textContent="🟢 AI พร้อมแล้ว"; pill.style.background="#0f7b3d"; pill.style.color="#fff"; }
@@ -473,6 +510,10 @@
   document.addEventListener("click",(e)=>{
     const pill=e.target.closest&&e.target.closest("#plugPill");
     if(!pill) return;
+    if(!isPerchanceEnv()){
+      alert("ตอนนี้รันนอก perchance.org (เช่น ก๊อป HTML ไปโฮสต์เอง)\nปลั๊กอิน generateText/generateImage ของ Perchance จะไม่มีให้ใช้\n\nวิธีที่ถูก:\n1) เปิดหน้าเว็บที่เซฟแล้วบน perchance.org แล้วใช้งานตรงนั้น หรือ\n2) ฝังด้วย iframe: <iframe src=\"https://null.perchance.org/ชื่อเว็บคุณ\"> (เปลี่ยนชื่อเว็บคุณ)\n\nตอนนี้เว็บจะใช้ AI สำรอง (Pollinations) ให้อัตโนมัติแทน");
+      return;
+    }
     const ds=["generateText","generateImage","kv"].map(plugDiag);
     const txt=ds.map(d=>`${d.name}: ${d.foundVia?("เจอผ่าน "+d.foundVia):"ยังไม่เจอ"} (root:${d.rootType}, iframe:${d.iframe})`).join("\n");
     console.warn("[plugDiag]",ds);
@@ -502,6 +543,10 @@
     for(const n of names){
       const already=plug(n);
       if(already){ got[n]=already; continue; }
+      // นอก Perchance รอไปก็ไม่มี — ข้ามไป fallback ทันที ไม่ต้องรอ 45 วิ
+      if(!isPerchanceEnv()){
+        return null;
+      }
       const t0=Date.now();
       if(statusEl) statusEl.textContent="⏳ กำลังรอปลั๊กอิน "+n+" โหลด... (ครั้งแรกอาจใช้เวลา 5–30 วินาที ไม่ต้องรีเฟรช)";
       // ระหว่างรอ อัปเดตวินาทีให้ผู้ใช้เห็นว่าไม่ได้ค้าง
@@ -548,8 +593,10 @@
   // ฟังก์ชันวินิจฉัยแบบเรียกจาก console ได้: window.__auddyDiag()
   window.__auddyDiag=function(){
     const ds=["generateText","generateImage","kv"].map(plugDiag);
-    return {pill:($("plugPill")&&$("plugPill").textContent)||null, tries:plugState.tries, ready:plugState.ready, lastDiag:plugState.lastDiag, details:ds,
-      href:location.href, ua:navigator.userAgent, online:navigator.onLine};
+    let env="perchance";
+    try{ env=isPerchanceEnv()?"perchance":"external"; }catch(e){}
+    return {env, pill:($("plugPill")&&$("plugPill").textContent)||null, tries:plugState.tries, ready:plugState.ready, lastDiag:plugState.lastDiag, details:ds,
+      href:location.href, host:(location&&location.hostname)||"", ua:navigator.userAgent, online:navigator.onLine};
   };
   const PAGES = [
     ["home","🏠 หน้าแรก"],["image","🎨 สร้างภาพ"],["content","✍️ คอนเทนต์"],
@@ -700,15 +747,28 @@
     $("imgStatus").textContent="⏳ กำลังเตรียมปลั๊กอิน...";
     try{
       const plugs=await ensurePlugs(["generateImage"],$("imgStatus"),box);
-      if(!plugs){ btn.disabled=false; return; }
-      const GImg=plugs.generateImage;
-      $("imgStatus").textContent="กำลังสร้าง...";
       const b=await getBrand();
       const base=$("imgPromptInput").value.trim()||"beautiful cozy cafe";
       const styles=selectedStyles("styleChips");
       const full=`${base}, ${styles}${b.style?`, ${b.style}`:""}${b.colors?`, brand colors ${b.colors}`:""}`;
       const ratio=$("imgRatioSel").value||"768x768";
       const neg=$("imgNegInput").value.trim();
+      if(!plugs){
+        // โหมดเว็บนอก / ปลั๊กอินไม่มา — ใช้รูปสำรองฟรีทันที
+        $("imgStatus").textContent="🌐 ใช้รูปสำรอง (นอก Perchance)...";
+        const fbUrl=pollinationsImageUrl(full,ratio);
+        box.innerHTML="";
+        const fimg=document.createElement("img");
+        fimg.src=fbUrl; fimg.alt=full; fimg.style.width="100%"; fimg.style.height="auto";
+        box.appendChild(fimg);
+        lastImgUrl=fbUrl;
+        $("imgDlBtn").disabled=false;
+        $("imgStatus").textContent="✅ เสร็จแล้ว (รูปสำรอง — บน perchance.org จะได้ตัวหลักที่แรงกว่า)";
+        pushImgHistory(full, fbUrl);
+        btn.disabled=false; return;
+      }
+      const GImg=plugs.generateImage;
+      $("imgStatus").textContent="กำลังสร้าง...";
       const r=await GImg(full,{resolution:ratio,negativePrompt:neg||undefined});
       box.innerHTML="";
       const img=document.createElement("img");
@@ -724,10 +784,23 @@
       $("imgStatus").textContent="เกิดข้อผิดพลาด ลองใหม่อีกครั้ง";
     }finally{btn.disabled=false;}
   };
-  $("imgDlBtn").onclick=()=>{
-    if(!lastImgUrl) return;
-    const a=document.createElement("a"); a.href=lastImgUrl; a.download="auddy-tom-studio.png"; a.click();
-  };
+   $("imgDlBtn").onclick=async()=>{
+     if(!lastImgUrl) return;
+    try{
+      if(lastImgUrl.startsWith("data:")){
+        const a=document.createElement("a"); a.href=lastImgUrl; a.download="auddy-tom-studio.png"; a.click(); return;
+      }
+      $("imgStatus").textContent="⏳ กำลังเตรียมไฟล์ดาวน์โหลด...";
+      const res=await fetch(lastImgUrl);
+      const blob=await res.blob();
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a"); a.href=url; a.download="auddy-tom-studio.png"; a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),10000);
+      $("imgStatus").textContent="✅ เตรียมไฟล์แล้ว";
+    }catch(e){
+      window.open(lastImgUrl,"_blank");
+    }
+   };
 
   // ---- TEXT (streaming, cancellable) ----
   let txtHandle=null;
@@ -750,8 +823,15 @@
     try{
       const plugs=await ensurePlugs(["generateText"],$("txtStatus"),null);
       if(!plugs){
-        $("txtStatus").textContent="⚠️ AI ในเว็บยังไม่พร้อม — ใช้ prompt สำรองด้านล่างได้เลย";
-        out.textContent=`⚠️ AI ในเว็บยังไม่พร้อม (ปิด adblock / รอป้ายมุมขวาบนเป็น 🟢 แล้วกดอีกครั้ง)\n\n✅ ก๊อป prompt นี้ไปวางใน ChatGPT / Claude ได้ผลเหมือนกัน:\n\n──────── prompt สำรอง ────────\n${instruction0}\n──────── จบ ────────`;
+        $("txtStatus").textContent="🌐 ปลั๊กอินหลักไม่มา — กำลังลอง AI สำรอง...";
+        try{
+          const fb=await pollinationsText(instruction0,(d)=>{ out.textContent=d.fullTextSoFar||""; });
+          out.textContent=(fb&&fb.text)||"";
+          $("txtStatus").textContent="✅ เสร็จแล้ว (ผ่าน AI สำรอง)";
+        }catch(fe){
+          $("txtStatus").textContent="⚠️ AI ในเว็บยังไม่พร้อม — ใช้ prompt สำรองด้านล่างได้เลย";
+          out.textContent=`⚠️ AI ในเว็บยังไม่พร้อม (ปิด adblock / รอป้ายมุมขวาบนเป็น 🟢 แล้วกดอีกครั้ง)\n\n✅ ก๊อป prompt นี้ไปวางใน ChatGPT / Claude ได้ผลเหมือนกัน:\n\n──────── prompt สำรอง ────────\n${instruction0}\n──────── จบ ────────`;
+        }
         $("txtStopBtn").disabled=true; $("txtGenBtn").disabled=false; return;
       }
       const GText=plugs.generateText;
@@ -832,7 +912,16 @@
     try{
       const plugs=await ensurePlugs(["generateText"],$("vidStatus"),{set textContent(v){ out.textContent=v; }});
       if(!plugs){
-        // ทางสำรอง: ไม่บล็อกผู้ใช้ — ให้ prompt สำเร็จรูปไปใช้กับ AI ตัวอื่นได้เลย + ปุ่มลองใหม่
+        // ทางสำรอง: ลอง AI สำรอง (ใช้ได้นอก Perchance) ก่อน — ถ้าไม่ได้ค่อยให้ prompt ไปวางที่อื่น
+        $("vidStatus").textContent="🌐 ปลั๊กอินหลักไม่มา — กำลังลอง AI สำรอง...";
+        try{
+          const fb=await pollinationsText(instruction,(d)=>{ out.textContent=d.fullTextSoFar||""; });
+          out.textContent=(fb&&fb.text)||"";
+          $("vidStatus").textContent="✅ เสร็จแล้ว (ผ่าน AI สำรอง — ถ้าใช้บน perchance.org จะใช้ตัวหลักที่แรงกว่า)";
+          $("vidGenBtn").disabled=false; return;
+        }catch(fe){
+          console.warn("[video fallback failed]",fe);
+        }
         $("vidStatus").textContent="⚠️ AI ในเว็บยังไม่พร้อม — ใช้ prompt สำรองด้านล่างได้เลย";
         out.textContent=`⚠️ กดสร้างตอนนี้ AI ในเว็บยังไม่พร้อม (มักเกิดจาก adblock บล็อก text-generation.perchance.org หรือเน็ตบริษัท/โรงเรียนบล็อก)\n\n✅ ทางไปต่อ (เลือกข้อใดข้อหนึ่ง):\n1) ปิด adblock / Brave Shields สำหรับเว็บนี้ → รอป้ายมุมขวาบนเป็น 🟢 แล้วกดปุ่มเดิมอีกครั้ง\n2) เปลี่ยนเป็น Chrome/Edge ล่าสุด หรือลองเน็ตมือถือ\n3) ก๊อป prompt ด้านล่างไปวางใน ChatGPT / Claude / Gemini ได้ผลเหมือนกัน แล้วเอาผลกลับมาใช้:\n\n──────── prompt สำรอง ────────\n${instruction}\n──────── จบ prompt ────────\n\nกดปุ่ม "แตกสตอรี่บอร์ด" อีกครั้งเมื่อป้ายมุมขวาบนเป็น 🟢`;
         $("vidGenBtn").disabled=false; return;
@@ -842,9 +931,15 @@
     }catch(e){
       console.warn(e);
       const em=(e&&e.message?e.message:String(e));
-      // ถ้า iframe โดนบล็อก จะ error ตรงนี้แทน (plug เจอ แต่สตรีมไม่ได้)
-      out.textContent=`❌ สร้างไม่สำเร็จ: ${em}\n\nถ้าข้อความมีคำว่า iframe / stream / network / blocked แปลว่าเบราว์เซอร์บล็อกหน้าต่าง AI — ปิด adblock แล้วลองใหม่ หรือใช้ prompt สำรองด้านล่างกับ AI ตัวอื่นได้:\n\n──────── prompt สำรอง ────────\n${instruction}`;
-      $("vidStatus").textContent="เกิดข้อผิดพลาด — อ่านทางแก้ในกล่องผลลัพธ์";
+      // ถ้า iframe โดนบล็อก จะ error ตรงนี้แทน (plug เจอ แต่สตรีมไม่ได้) — ลอง fallback ให้อัตโนมัติ
+      try{
+        $("vidStatus").textContent="🌐 ตัวหลักสะดุด — กำลังลอง AI สำรอง...";
+        const fb=await pollinationsText(instruction,(d)=>{ out.textContent=d.fullTextSoFar||""; });
+        out.textContent=(fb&&fb.text)||"";
+        $("vidStatus").textContent="✅ เสร็จแล้ว (ผ่าน AI สำรอง)";
+      }catch(fe){
+        out.textContent=`❌ สร้างไม่สำเร็จ: ${em}\n\nถ้าข้อความมีคำว่า iframe / stream / network / blocked แปลว่าเบราว์เซอร์บล็อกหน้าต่าง AI — ปิด adblock แล้วลองใหม่ หรือใช้ prompt สำรองด้านล่างกับ AI ตัวอื่นได้:\n\n──────── prompt สำรอง ────────\n${instruction}`;
+      }
     }
     finally{$("vidGenBtn").disabled=false;}
   };

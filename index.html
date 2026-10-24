@@ -1,0 +1,657 @@
+<style>
+  :root{
+    --bg:#fafaf8; --card:#ffffff; --ink:#17130e; --muted:#7a736a;
+    --line:#ece6dc; --brand:#ff5c1a; --brand2:#7c3aed; --dark:#14100c;
+    --radius:18px; --shadow:0 10px 30px rgba(20,16,12,.08);
+  }
+  *{box-sizing:border-box}
+  body{text-align:left !important; margin:0; background:var(--bg); color:var(--ink);
+    font-family:Inter,system-ui,-apple-system,"Segoe UI",Tahoma,"Noto Sans Thai",sans-serif;}
+  a{color:inherit}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 20px}
+  /* header */
+  .topbar{position:sticky;top:0;z-index:50;background:rgba(250,250,248,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .topbar-in{display:flex;align-items:center;gap:14px;height:64px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;cursor:pointer;white-space:nowrap}
+  .logo-mark{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:grid;place-items:center;color:#fff;font-weight:900}
+  .nav{display:flex;gap:4px;margin-left:8px;overflow-x:auto;scrollbar-width:none}
+  .nav button{border:0;background:transparent;padding:9px 12px;border-radius:999px;font-size:14px;cursor:pointer;white-space:nowrap;color:#3d3831}
+  .nav button.active,.nav button:hover{background:#17130e;color:#fff}
+  .pill-free{background:#0f7b3d;color:#fff;font-size:12px;font-weight:800;padding:5px 10px;border-radius:999px;white-space:nowrap}
+  .top-cta{margin-left:auto;display:flex;gap:8px;flex:none}
+  .top-cta .btn{white-space:nowrap}
+  .btn{border:0;border-radius:12px;padding:11px 16px;font-weight:700;font-size:14px;cursor:pointer;transition:.15s}
+  .btn-dark{background:var(--dark);color:#fff}
+  .btn-brand{background:var(--brand);color:#fff}
+  .btn-ghost{background:#fff;border:1px solid var(--line)}
+  .btn:disabled{opacity:.55;cursor:wait}
+  .btn:active{transform:scale(.98)}
+  /* hero */
+  .hero{background:radial-gradient(900px 400px at 20% 0%,#ffe6d6,transparent),radial-gradient(800px 400px at 90% 10%,#e6e0ff,transparent),#fff;border-bottom:1px solid var(--line)}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:28px;padding:46px 0 34px;align-items:center}
+  @media(max-width:900px){.hero-grid{grid-template-columns:1fr}.nav{display:none}.mobile-nav{display:flex !important}}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px}
+  h1{font-size:clamp(32px,5vw,56px);line-height:1.05;margin:14px 0;letter-spacing:-1px}
+  h1 .grad{background:linear-gradient(90deg,var(--brand),var(--brand2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:#4d4740;font-size:17px;line-height:1.7}
+  .hero-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .stats{display:flex;gap:18px;margin-top:20px;flex-wrap:wrap}
+  .stat b{font-size:20px;display:block}
+  .stat span{font-size:13px;color:var(--muted)}
+  .hero-card{background:var(--dark);color:#fff;border-radius:22px;padding:18px;box-shadow:var(--shadow)}
+  .hero-card h3{margin:4px 0 8px}
+  .brief-row{display:flex;gap:8px}
+  .brief-row input{flex:1;border:1px solid #333;background:#1e1914;color:#fff;border-radius:12px;padding:12px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .chip{border:1px solid #3a332c;background:#211c16;color:#ffe9d6;border-radius:999px;padding:7px 11px;font-size:13px;cursor:pointer}
+  .chip:hover{border-color:var(--brand)}
+  .mini{font-size:12px;color:#b9b0a4;margin-top:10px;line-height:1.6}
+  /* sections */
+  .page{display:none;padding:28px 0 40px}
+  .page.active{display:block}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:860px){.grid2{grid-template-columns:1fr}}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:860px){.grid3{grid-template-columns:1fr}}
+  label{font-size:13px;font-weight:700;display:block;margin:12px 0 6px}
+  input[type=text],textarea,select{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 12px;font-size:14px;background:#fff;color:var(--ink)}
+  textarea{min-height:96px;resize:vertical;line-height:1.6}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .preset{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:13px;cursor:pointer}
+  .preset.on{background:var(--dark);color:#fff;border-color:var(--dark)}
+  .out{margin-top:14px;background:#111;color:#f5f1ea;border-radius:14px;padding:14px;min-height:80px;line-height:1.7;font-size:14px;white-space:pre-wrap}
+  .out.light{background:#f7f3ec;color:var(--ink);border:1px solid var(--line)}
+  .img-result{margin-top:12px;display:grid;place-items:center;background:#0f0d0a;border-radius:14px;min-height:280px;overflow:hidden;position:relative}
+  .img-result img{max-width:100%;display:block}
+  .spinner{width:34px;height:34px;border-radius:50%;border:3px solid #444;border-top-color:var(--brand);animation:spin 1s linear infinite;margin:40px auto}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loadline{display:flex;align-items:center;gap:10px;color:#ffb78f;font-size:13px;padding:24px 0}
+  .dots::after{content:"";animation:dots 1.2s steps(4) infinite}
+  @keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+  .feat{display:flex;gap:12px;align-items:flex-start}
+  .feat i{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:#fff3ea;font-style:normal;flex:none}
+  .muted{color:var(--muted);font-size:13px;line-height:1.7}
+  .klist{display:grid;gap:10px;margin:12px 0}
+  .klist div{background:#f7f3ec;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px}
+  .mobile-nav{display:none;gap:6px;padding:10px 16px;overflow-x:auto;border-top:1px solid var(--line);background:#fff}
+  .mobile-nav button{flex:none;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:13px}
+  .mobile-nav button.active{background:var(--dark);color:#fff}
+  footer{border-top:1px solid var(--line);padding:22px 0 60px;color:var(--muted);font-size:13px}
+  .ok{color:#0f7b3d;font-weight:700}.warn{color:#9a5b00;font-weight:700}
+  .history-item{border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:8px;font-size:13px;background:#fff}
+  .history-item img{max-width:100%;border-radius:8px;margin-top:6px}
+  details{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff;margin-top:10px}
+  summary{cursor:pointer;font-weight:700}
+</style>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <div class="logo" data-go="home"><div class="logo-mark">A</div> AUDDY&TOM Studio <span class="pill-free">ฟรี 100%</span></div>
+    <nav class="nav" id="navEl"></nav>
+    <div class="top-cta">
+      <button class="btn btn-ghost" data-go="pricing">ราคา</button>
+      <button class="btn btn-dark" data-go="image">เริ่มสร้าง →</button>
+    </div>
+  </div>
+  <div class="mobile-nav" id="mnavEl"></div>
+</div>
+
+<div class="hero" id="heroBox">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">✨ Agentic Creative Studio • จำสไตล์ของคุณได้ • ไม่ต้องล็อกอิน</span>
+      <h1>บรีฟเดียว ได้ครบ <span class="grad">ภาพ คอนเทนต์ UI วิดีโอ 3D</span></h1>
+      <p class="sub">เว็บ AI สไตล์ Miora ที่ <b>ทุกเมนูใช้งานได้จริงและฟรี</b> — พิมพ์ไอเดียครั้งเดียว แล้วให้ AI ต่อยอดเป็นชุดงานออนแบรนด์ พร้อม Brand Memory จำโทน สี และสไตล์ของคุณไว้ในเครื่อง (ไม่ส่งออกเซิร์ฟเวอร์อื่น)</p>
+      <div class="hero-actions">
+        <button class="btn btn-brand" data-go="image">🎨 สร้างภาพเลย</button>
+        <button class="btn btn-dark" data-go="content">✍️ เขียนคอนเทนต์</button>
+        <button class="btn btn-ghost" data-go="gallery">ดูแกลเลอรี</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><b>8+ เครื่องมือ</b><span>ใช้งานได้จริงทั้งหมด</span></div>
+        <div class="stat"><b>0 บาท</b><span>ไม่มี paywall / ไม่ต้องสมัคร</span></div>
+        <div class="stat"><b>0 ลิงก์เสีย</b><span>ทุกปุ่มเป็นเมนูภายใน ตรวจสอบแล้ว</span></div>
+      </div>
+    </div>
+    <div class="hero-card">
+      <h3>⚡ Quick Brief — ลองเลย</h3>
+      <div class="muted" style="color:#b9b0a4">พิมพ์ไอเดียสั้นๆ แล้วเลือกว่าจะให้ AI ทำอะไรต่อ</div>
+      <div style="height:10px"></div>
+      <div class="brief-row">
+        <input id="quickInput" type="text" placeholder="เช่น คาเฟ่แมวสไตล์ญี่ปุ่น โทนอบอุ่น..." value="คาเฟ่แมวสไตล์ญี่ปุ่น โทนอบอุ่น ยามเย็น" />
+      </div>
+      <div class="chips">
+        <button class="chip" data-quick="image">🎨 เป็นภาพ</button>
+        <button class="chip" data-quick="content">✍️ เป็นแคปชันขาย</button>
+        <button class="chip" data-quick="uiux">🧩 เป็นไอเดียแอป</button>
+        <button class="chip" data-quick="video">🎬 เป็นสตอรี่บอร์ด</button>
+        <button class="chip" data-quick="3d">🧊 เป็น 3D prompt</button>
+      </div>
+      <div class="mini">ทิป: ตั้งค่า <b style="color:#fff">Brand Memory</b> ก่อน งานทุกชิ้นจะออนแบรนด์อัตโนมัติ — <a href="#" data-go="brand" style="color:#ffb78f">ไปตั้งค่า →</a></div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- HOME -->
+  <section class="page" data-page="home">
+    <div class="grid3" style="margin-top:18px">
+      <div class="card feat"><i>🎨</i><div><b>AI Image Studio</b><div class="muted">พิมพ์ไทยได้ สร้างภาพโฆษณา ตัวละคร สินค้า ภาพประกอบ พร้อม preset สไตล์และอัตราส่วน</div><div style="height:8px"></div><button class="btn btn-dark" data-go="image">เปิดเครื่องมือ</button></div></div>
+      <div class="card feat"><i>✍️</i><div><b>AI Content Writer</b><div class="muted">แคปชันขาย บทความ SEO สคริปต์วิดีโอ สโลแกน สตรีมข้อความแบบเรียลไทม์</div><div style="height:8px"></div><button class="btn btn-dark" data-go="content">เปิดเครื่องมือ</button></div></div>
+      <div class="card feat"><i>🧩</i><div><b>UI/UX Idea Lab</b><div class="muted">เปลี่ยนไอเดียเป็นโครงแอป: โครงหน้า สี ฟอนต์ UX flow และ prompt สำหรับทำต่อ</div><div style="height:8px"></div><button class="btn btn-dark" data-go="uiux">เปิดเครื่องมือ</button></div></div>
+      <div class="card feat"><i>🎬</i><div><b>Video Storyboard</b><div class="muted">แตกไอเดียเป็นช็อตต่อช็อต: มุมกล้อง เสียง ระยะเวลา + prompt สำหรับเครื่องมือวิดีโอ</div><div style="height:8px"></div><button class="btn btn-dark" data-go="video">เปิดเครื่องมือ</button></div></div>
+      <div class="card feat"><i>🧊</i><div><b>3D Prompt Maker</b><div class="muted">เขียน prompt งาน 3D ให้เรนเดอร์สวย (clay / octane / isometric) พร้อมภาพพรีวิว</div><div style="height:8px"></div><button class="btn btn-dark" data-go="3d">เปิดเครื่องมือ</button></div></div>
+      <div class="card feat"><i>🧠</i><div><b>Brand Memory</b><div class="muted">จำชื่อแบรนด์ โทน สี สไตล์ ไว้ในเครื่อง งานทุกชิ้นดึงไปใช้เองอัตโนมัติ</div><div style="height:8px"></div><button class="btn btn-dark" data-go="brand">ตั้งค่า</button></div></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <b>วิธีใช้ 3 ขั้น (ฟรีทั้งหมด)</b>
+      <div class="klist">
+        <div>1️⃣ ตั้ง <b>Brand Memory</b> 1 ครั้ง (ชื่อร้าน โทน สี) — ข้ามก็ได้</div>
+        <div>2️⃣ พิมพ์บรีฟสั้นๆ ที่หน้าเครื่องมือที่ต้องการ แล้วกดสร้าง</div>
+        <div>3️⃣ เซฟ / ดาวน์โหลด / ดูประวัติย้อนหลังได้ ทุกอย่างอยู่ในเครื่องคุณ</div>
+      </div>
+      <div class="muted">หมายเหตุซื่อสัตย์: เว็บนี้สร้างใหม่ทั้งหมดโดยได้แรงบันดาลใจจาก miora.design ไม่ได้คัดลอกโค้ดหรือรูปของ Miora มาใช้ โมเดลภาพ/ข้อความใช้ฟรีโควต้าของ Perchance • วิดีโอจริงยังเรนเดอร์ในเบราว์เซอร์ไม่ได้ จึงให้เป็นสตอรี่บอร์ด+prompt เอาไปทำต่อได้ทันที</div>
+    </div>
+  </section>
+
+  <!-- IMAGE -->
+  <section class="page" data-page="image">
+    <div class="card">
+      <h2 style="margin:0">🎨 AI Image Studio <span class="pill-free">ฟรี</span></h2>
+      <div class="muted">พิมพ์ไทยหรืออังกฤษก็ได้ • เลือกสไตล์ + สัดส่วนภาพ • Brand Memory จะถูกเติมให้อัตโนมัติ</div>
+      <label>บรีฟภาพของคุณ</label>
+      <textarea id="imgPromptInput">ร้านกาแฟเล็กๆ ท่ามกลางสวนญี่ปุ่นยุค 90, แมวนอนบนเคาน์เตอร์ไม้, แสงเย็นสีทอง, อบอุ่น, รายละเอียดสูง</textarea>
+      <label>สไตล์ (แตะเลือกได้หลายอัน)</label>
+      <div class="row" id="styleChips">
+        <button class="preset on">cinematic photo</button>
+        <button class="preset">anime, studio ghibli</button>
+        <button class="preset">oil painting</button>
+        <button class="preset">3d render, octane</button>
+        <button class="preset">minimal logo</button>
+        <button class="preset">product photo, studio light</button>
+        <button class="preset">watercolor</button>
+      </div>
+      <div class="grid2">
+        <div>
+          <label>สัดส่วนภาพ</label>
+          <select id="imgRatioSel">
+            <option value="768x768">⬛ จัตุรัส 1:1 (โพสต์ทั่วไป)</option>
+            <option value="512x768">📱 แนวตั้ง 2:3 (สตอรี่ / มือถือ)</option>
+            <option value="768x512">🖥️ แนวนอน 3:2 (แบนเนอร์ / ปก)</option>
+          </select>
+        </div>
+        <div>
+          <label>สิ่งที่ไม่เอา (negative prompt)</label>
+          <input id="imgNegInput" type="text" value="blur, blurry, low quality, watermark, distorted hands" />
+        </div>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn btn-brand" id="imgGenBtn">✨ สร้างภาพ</button>
+        <button class="btn btn-ghost" id="imgDlBtn" disabled>⬇️ ดาวน์โหลด</button>
+        <span class="muted" id="imgStatus">พร้อมสร้าง • ฟรี ไม่ต้องล็อกอิน</span>
+      </div>
+      <div class="img-result" id="imgResult"><span class="muted">ภาพจะแสดงตรงนี้</span></div>
+      <div class="muted" style="margin-top:8px">กดรูปหัวใจบนภาพเพื่อเซฟลงแกลเลอรีสาธารณะของเว็บนี้ได้ • ประวัติภาพของคุณดูได้ที่เมนู “ประวัติของฉัน” ด้านล่าง</div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <b>🕘 ประวัติภาพของฉัน (เก็บในเครื่อง)</b>
+      <div id="imgHistory"><div class="muted">ยังไม่มีประวัติ — สร้างภาพแรกได้เลย</div></div>
+      <div class="row" style="margin-top:8px"><button class="btn btn-ghost" id="imgClearHist">ล้างประวัติ</button></div>
+    </div>
+  </section>
+
+  <!-- CONTENT -->
+  <section class="page" data-page="content">
+    <div class="card">
+      <h2 style="margin:0">✍️ AI Content Writer <span class="pill-free">ฟรี</span></h2>
+      <div class="muted">แคปชันขาย • บทความ • สคริปต์ • สโลแกน — สตรีมข้อความทีละคำ</div>
+      <div class="grid2">
+        <div>
+          <label>หัวข้อ / บรีฟ</label>
+          <input id="txtTopicInput" type="text" value="เปิดตัวคาเฟ่แมว เปิด 24 ชม. ใจกลางเมือง" />
+        </div>
+        <div>
+          <label>ประเภทงานเขียน</label>
+          <select id="txtTypeSel">
+            <option value="caption">แคปชันขายของ (สั้น กระแทกใจ + hashtag)</option>
+            <option value="seo">บทความ SEO (ยาว มีหัวข้อย่อย)</option>
+            <option value="script">สคริปต์วิดีโอ 60 วินาที</option>
+            <option value="slogan">สโลแกน 10 แบบ + เหตุผล</option>
+            <option value="story">เรื่องสั้นจากไอเดีย</option>
+          </select>
+        </div>
+      </div>
+      <label>โทนเสียง (จะรวมกับ Brand Memory อัตโนมัติ)</label>
+      <div class="row" id="toneChips">
+        <button class="preset on">เป็นกันเอง</button><button class="preset">พรีเมียม</button><button class="preset">ตลก</button><button class="preset">ทางการ</button><button class="preset">Gen-Z</button>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn btn-brand" id="txtGenBtn">✨ เขียนเลย</button>
+        <button class="btn btn-ghost" id="txtStopBtn" disabled>⏹ หยุด</button>
+        <button class="btn btn-ghost" id="txtCopyBtn">📋 คัดลอก</button>
+        <span class="muted" id="txtStatus">พร้อมเขียน</span>
+      </div>
+      <div class="out" id="txtOut">ผลลัพธ์จะสตรีมตรงนี้...</div>
+    </div>
+  </section>
+
+  <!-- UIUX -->
+  <section class="page" data-page="uiux">
+    <div class="card">
+      <h2 style="margin:0">🧩 UI/UX Idea Lab <span class="pill-free">ฟรี</span></h2>
+      <div class="muted">บอกไอเดียแอป/เว็บ ได้สเปกพร้อมทำต่อ: โครงหน้า พาเลตต์สี ฟอนต์ UX flow</div>
+      <label>ไอเดียแอป / เว็บ</label>
+      <input id="uiIdeaInput" type="text" value="แอปจองคาเฟ่แมว ดูที่นั่งว่างแบบเรียลไทม์ + สะสมแต้ม" />
+      <div class="row" style="margin-top:14px">
+        <button class="btn btn-brand" id="uiGenBtn">✨ สร้างสเปก UI</button>
+        <button class="btn btn-ghost" id="uiCopyBtn">📋 คัดลอก</button>
+        <span class="muted" id="uiStatus">พร้อมออกแบบ</span>
+      </div>
+      <div class="out" id="uiOut">สเปก UI จะแสดงตรงนี้...</div>
+      <div class="grid2" style="margin-top:12px">
+        <div class="card" style="box-shadow:none"><b>🎨 พาเลตต์ที่แนะนำ</b><div id="uiPalette" class="row" style="margin-top:8px"></div></div>
+        <div class="card" style="box-shadow:none"><b>💡 ทำต่อได้ยังไง</b><div class="muted">เอาสเปกนี้ไปวางใน Figma / v0 / นักออกแบบได้เลย หรือกดปุ่ม “สร้างภาพมู้ดบอร์ด” เพื่อเห็นภาพรวม</div><div style="height:8px"></div><button class="btn btn-dark" id="uiMoodBtn">🖼️ สร้างภาพมู้ดบอร์ด</button></div>
+      </div>
+      <div class="img-result" id="uiImgResult" hidden></div>
+    </div>
+  </section>
+
+  <!-- VIDEO -->
+  <section class="page" data-page="video">
+    <div class="card">
+      <h2 style="margin:0">🎬 Video Storyboard <span class="pill-free">ฟรี</span></h2>
+      <div class="muted">เรายังเรนเดอร์วิดีโอในเบราว์เซอร์ฟรีไม่ได้แบบ Miora — เครื่องมือนี้จึงแตกไอเดียเป็น <b>สตอรี่บอร์ดพร้อมถ่ายทำ + prompt วิดีโอ</b> เอาไปวางในเครื่องมือวิดีโอใดก็ได้ทันที</div>
+      <label>ไอเดียวิดีโอ</label>
+      <input id="vidIdeaInput" type="text" value="โฆษณาคาเฟ่แมว 30 วินาที เปิดด้วยฝนตก จบด้วยรอยยิ้ม" />
+      <label>ความยาว</label>
+      <select id="vidLenSel"><option>15 วินาที (Reels/TikTok)</option><option selected>30 วินาที (โฆษณา)</option><option>60 วินาที (เล่าเรื่อง)</option></select>
+      <div class="row" style="margin-top:14px">
+        <button class="btn btn-brand" id="vidGenBtn">✨ แตกสตอรี่บอร์ด</button>
+        <button class="btn btn-ghost" id="vidCopyBtn">📋 คัดลอก</button>
+        <span class="muted" id="vidStatus">พร้อมแตกช็อต</span>
+      </div>
+      <div class="out" id="vidOut">สตอรี่บอร์ดจะแสดงตรงนี้: ช็อต มุมกล้อง เสียง บทพูด...</div>
+    </div>
+  </section>
+
+  <!-- 3D -->
+  <section class="page" data-page="3d">
+    <div class="card">
+      <h2 style="margin:0">🧊 3D Prompt Maker <span class="pill-free">ฟรี</span></h2>
+      <div class="muted">เขียน prompt งาน 3D ให้สวยเหมือนเรนเดอร์จริง + สร้างภาพพรีวิวได้ทันที</div>
+      <label>วัตถุ / ฉาก 3D ที่อยากได้</label>
+      <input id="tdObjInput" type="text" value="มาสคอตแมวอ้วนนักบินอวกาศ ชุดส้มขาว ยืนบนดวงจันทร์จิ๋ว" />
+      <label>สไตล์เรนเดอร์</label>
+      <div class="row" id="tdStyleChips">
+        <button class="preset on">clay render, soft studio light</button>
+        <button class="preset">octane render, ultra detailed</button>
+        <button class="preset">isometric diorama</button>
+        <button class="preset">low-poly game asset</button>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn btn-brand" id="tdPromptBtn">✨ เขียน 3D prompt</button>
+        <button class="btn btn-brand" id="tdImgBtn">🖼️ สร้างภาพพรีวิว</button>
+        <button class="btn btn-ghost" id="tdCopyBtn">📋 คัดลอก prompt</button>
+        <span class="muted" id="tdStatus">พร้อมสร้าง</span>
+      </div>
+      <div class="out light" id="tdOut">3D prompt (ภาษาอังกฤษ พร้อม best keywords) จะแสดงตรงนี้...</div>
+      <div class="img-result" id="tdImgResult" hidden></div>
+    </div>
+  </section>
+
+  <!-- BRAND -->
+  <section class="page" data-page="brand">
+    <div class="card">
+      <h2 style="margin:0">🧠 Brand Memory <span class="pill-free">จำในเครื่อง</span></h2>
+      <div class="muted">ตั้งครั้งเดียว ทุกเครื่องมือจะดึงไปใช้เอง (ชื่อแบรนด์ โทน สี สไตล์) • เก็บด้วย kv-plugin ในเครื่องคุณเท่านั้น ลบได้ตลอด</div>
+      <div class="grid2">
+        <div><label>ชื่อแบรนด์</label><input id="brandName" type="text" placeholder="เช่น AUDDY&TOM Cat Cafe" /></div>
+        <div><label>โทนเสียง</label><input id="brandTone" type="text" placeholder="เช่น อบอุ่น เป็นกันเอง ติดตลกนิดๆ" /></div>
+      </div>
+      <div class="grid2">
+        <div><label>สีหลัก (เช่น #ff5c1a, ครีม, น้ำตาลไม้)</label><input id="brandColors" type="text" placeholder="เช่น ส้ม #ff5c1a + ครีม + น้ำตาลไม้" /></div>
+        <div><label>สไตล์ภาพจำ (เช่น ghibli, minimal, cinematic)</label><input id="brandStyle" type="text" placeholder="เช่น cinematic warm, cozy japanese" /></div>
+      </div>
+      <label>สิ่งที่ห้ามทำ (เช่น ห้ามใช้สีดำ, ห้ามภาษาทางการ)</label>
+      <input id="brandAvoid" type="text" placeholder="เช่น ห้ามใช้คำทางการ ห้ามภาพน่ากลัว" />
+      <div class="row" style="margin-top:14px">
+        <button class="btn btn-brand" id="brandSaveBtn">💾 บันทึกความจำ</button>
+        <button class="btn btn-ghost" id="brandClearBtn">🗑 ล้างความจำ</button>
+        <span class="muted" id="brandStatus">กำลังโหลดความจำ...</span>
+      </div>
+      <div class="out light" id="brandPreview">...</div>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section class="page" data-page="gallery">
+    <div class="card">
+      <h2 style="margin:0">🖼️ แกลเลอรีสาธารณะ</h2>
+      <div class="muted">ภาพที่ผู้ใช้เว็บนี้กดหัวใจเซฟไว้ จะมารวมกันตรงนี้ (ระบบแกลเลอรีของ Perchance) • ถ้าโหลดไม่ได้ = ยังไม่มีภาพที่เซฟ</div>
+      <div class="row" style="margin:12px 0">
+        <button class="btn btn-dark" id="galRecent">ล่าสุด</button>
+        <button class="btn btn-ghost" id="galTop">ยอดนิยม</button>
+      </div>
+      <div id="galleryBox" style="min-height:300px;border:1px solid var(--line);border-radius:14px;overflow:hidden"></div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="page" data-page="pricing">
+    <div class="card" style="text-align:center">
+      <h2 style="margin:0">💚 ราคา: ฟรีตลอดไป</h2>
+      <p class="muted">ไม่มีแผน Pro ไม่มีล็อกฟีเจอร์ ทุกเมนูข้างบนใช้ได้หมด — ต้นทุนรันโดยโควต้าฟรีของ Perchance (AI ข้อความ/ภาพ) + ที่เก็บในเครื่องคุณ</p>
+      <div class="grid3" style="text-align:left;margin-top:12px">
+        <div class="card" style="box-shadow:none"><b>🆓 Free — ฿0</b><div class="klist"><div>✅ สร้างภาพไม่จำกัด (ตามคิวว่าง)</div><div>✅ เขียนคอนเทนต์ / UI / สตอรี่บอร์ด / 3D</div><div>✅ Brand Memory + ประวัติในเครื่อง</div><div>✅ แกลเลอรีสาธารณะ</div></div><button class="btn btn-brand" data-go="image" style="width:100%">เริ่มใช้เลย</button></div>
+        <div class="card" style="box-shadow:none"><b>📦 สิ่งที่เราไม่ทำ</b><div class="klist"><div>❌ ไม่บังคับสมัคร / ไม่เก็บอีเมล</div><div>❌ ไม่ล็อกความละเอียดภาพ</div><div>❌ ไม่ฝังลายน้ำในภาพที่โหลด</div></div></div>
+        <div class="card" style="box-shadow:none"><b>⚖️ ข้อจำกัดซื่อสัตย์</b><div class="klist"><div>⏳ ช่วงคนเยอะ AI อาจต่อคิวหลายวินาที</div><div>🎬 วิดีโอจริงยังเรนเดอร์ให้ไม่ได้ (ให้เป็นสตอรี่บอร์ดแทน)</div><div>🖼️ ภาพ NSFW อาจถูกกรองโดยระบบ</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="page" data-page="faq">
+    <div class="card">
+      <h2 style="margin:0">❓ คำถามพบบ่อย</h2>
+      <details open><summary>ฟรีจริงไหม? ต้องสมัครไหม?</summary><div class="muted">ฟรีจริง ไม่ต้องสมัคร ไม่ต้องกรอกอีเมล เปิดเว็บแล้วใช้ได้เลย โควต้า AI มาจาก Perchance แบบฟรี</div></details>
+      <details><summary>เหมือน Miora ตรงไหน / ต่างตรงไหน?</summary><div class="muted">เหมือนตรงแนวคิด: บรีฟเดียวแตกเป็นภาพ คอนเทนต์ UI วิดีโอ 3D + มี Brand Memory จำสไตล์ ต่างตรงที่เว็บนี้โค้ดใหม่ทั้งหมด ไม่มีระบบล็อกอิน/จ่ายเงิน และวิดีโอให้เป็นสตอรี่บอร์ด+prompt แทนการเรนเดอร์จริง</div></details>
+      <details><summary>ข้อมูลแบรนด์ของฉันไปไหน?</summary><div class="muted">อยู่ในเครื่องคุณเท่านั้น (IndexedDB ผ่าน kv-plugin) ไม่ส่งไปเซิร์ฟเวอร์อื่น ลบได้ด้วยปุ่ม “ล้างความจำ”</div></details>
+      <details><summary>ภาพที่สร้างเอาไปใช้เชิงพาณิชย์ได้ไหม?</summary><div class="muted">โดยทั่วไปทำได้ แต่ควรตรวจเงื่อนไขโมเดล/แพลตฟอร์มอีกครั้งสำหรับงานสำคัญ และอย่าใช้ภาพที่มีโลโก้แบรนด์คนอื่นหรือใบหน้าบุคคลจริงโดยไม่ได้รับอนุญาต</div></details>
+      <details><summary>กดสร้างแล้วหมุนนาน / ขึ้น error ทำไง?</summary><div class="muted">รอ 10–60 วินาทีแล้วลองใหม่ อย่ากดรัวๆ เพราะคิวต่อคนมีจำกัด ถ้ายังไม่ได้ให้ลดความยาว prompt หรือเปลี่ยนสัดส่วนภาพแล้วลองอีกครั้ง</div></details>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap row" style="justify-content:space-between">
+    <div>AUDDY&TOM Studio • AI Creative Studio ฟรี — สร้างด้วย ❤️ บน Perchance • ทุกลิงก์ในเว็บนี้เป็นเมนูภายใน ตรวจสอบแล้วไม่เสีย</div>
+    <div class="row">
+      <button class="btn btn-ghost" data-go="home">หน้าแรก</button>
+      <button class="btn btn-ghost" data-go="faq">FAQ</button>
+      <button class="btn btn-ghost" data-go="pricing">ราคา</button>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  const $ = (id)=>document.getElementById(id);
+  const PAGES = [
+    ["home","🏠 หน้าแรก"],["image","🎨 สร้างภาพ"],["content","✍️ คอนเทนต์"],
+    ["uiux","🧩 UI/UX"],["video","🎬 สตอรี่บอร์ด"],["3d","🧊 3D"],
+    ["brand","🧠 แบรนด์"],["gallery","🖼️ แกลเลอรี"],["pricing","💚 ราคา"],["faq","❓ FAQ"]
+  ];
+  const navEl = $("navEl"), mnavEl = $("mnavEl");
+  PAGES.forEach(([k,label])=>{
+    const b=document.createElement("button"); b.textContent=label; b.dataset.go=k;
+    const m=b.cloneNode(true); m.dataset.go=k;
+    navEl.appendChild(b); mnavEl.appendChild(m);
+  });
+
+  let current="home";
+  function go(name){
+    if(!PAGES.some(p=>p[0]===name)) name="home";
+    current=name;
+    document.querySelectorAll(".page").forEach(s=>s.classList.toggle("active", s.dataset.page===name));
+    document.querySelectorAll("[data-go]").forEach(b=>{
+      if(b.tagName==="BUTTON" && (b.parentElement===navEl||b.parentElement===mnavEl))
+        b.classList.toggle("active", b.dataset.go===name);
+    });
+    const hero=$("heroBox"); hero.style.display = (name==="home") ? "" : "none";
+    window.scrollTo({top:0,behavior:"smooth"});
+    if(name==="gallery") renderGallery("recent");
+  }
+  document.addEventListener("click",(e)=>{
+    const t=e.target.closest("[data-go],[data-quick]");
+    if(!t) return;
+    if(t.dataset.go){ e.preventDefault(); go(t.dataset.go); }
+    else if(t.dataset.quick){
+      const v=($("quickInput").value||"").trim()||"ไอเดียใหม่";
+      const q=t.dataset.quick;
+      if(q==="image"){$("imgPromptInput").value=v; go("image");}
+      else if(q==="content"){$("txtTopicInput").value=v; go("content");}
+      else if(q==="uiux"){$("uiIdeaInput").value=v; go("uiux");}
+      else if(q==="video"){$("vidIdeaInput").value=v; go("video");}
+      else if(q==="3d"){$("tdObjInput").value=v; go("3d");}
+    }
+  });
+
+  // chip toggle groups
+  function chipGroup(id, multi){
+    const box=$(id); if(!box) return;
+    box.addEventListener("click",(e)=>{
+      const b=e.target.closest(".preset"); if(!b) return;
+      if(multi) b.classList.toggle("on");
+      else { box.querySelectorAll(".preset").forEach(x=>x.classList.remove("on")); b.classList.add("on"); }
+    });
+  }
+  chipGroup("styleChips",true); chipGroup("toneChips",false); chipGroup("tdStyleChips",false);
+
+  function selectedStyles(id){
+    return [...$(id).querySelectorAll(".preset.on")].map(x=>x.textContent.trim()).join(", ");
+  }
+  function singleSelected(id){
+    const el=$(id).querySelector(".preset.on"); return el?el.textContent.trim():"";
+  }
+
+  // ---- Brand memory (kv) ----
+  const BM_KEY="brand-memory-v1";
+  async function getBrand(){
+    try{ return (await root.kv.brand.get(BM_KEY)) || {}; }catch(e){ return {}; }
+  }
+  function brandLine(b){
+    const parts=[];
+    if(b.name) parts.push(`แบรนด์ "${b.name}"`);
+    if(b.tone) parts.push(`โทน ${b.tone}`);
+    if(b.colors) parts.push(`สี ${b.colors}`);
+    if(b.style) parts.push(`สไตล์ภาพ ${b.style}`);
+    if(b.avoid) parts.push(`ห้าม: ${b.avoid}`);
+    return parts.length?(" (Brand: "+parts.join(" | ")+")"):"";
+  }
+  async function refreshBrandUI(){
+    const b=await getBrand();
+    if($("brandName")) $("brandName").value=b.name||"";
+    if($("brandTone")) $("brandTone").value=b.tone||"";
+    if($("brandColors")) $("brandColors").value=b.colors||"";
+    if($("brandStyle")) $("brandStyle").value=b.style||"";
+    if($("brandAvoid")) $("brandAvoid").value=b.avoid||"";
+    $("brandStatus").textContent = (b.name||b.tone||b.colors||b.style) ? "✅ โหลดความจำแล้ว — ทุกเครื่องมือจะใช้สิ่งนี้อัตโนมัติ" : "ยังไม่มีความจำ — ตั้งค่าแล้วกดบันทึกได้เลย";
+    $("brandPreview").textContent = (b.name||b.tone||b.colors||b.style||b.avoid)
+      ? `Brand Memory ปัจจุบัน:\n• ชื่อ: ${b.name||"-"}\n• โทน: ${b.tone||"-"}\n• สี: ${b.colors||"-"}\n• สไตล์ภาพ: ${b.style||"-"}\n• ข้อห้าม: ${b.avoid||"-"}\n\nต่อท้าย prompt อัตโนมัติ:${brandLine(b)}`
+      : "ยังไม่มี Brand Memory — งาน AI จะใช้แค่บรีฟที่คุณพิมพ์";
+  }
+  $("brandSaveBtn").onclick=async()=>{
+    const b={name:$("brandName").value.trim(),tone:$("brandTone").value.trim(),colors:$("brandColors").value.trim(),style:$("brandStyle").value.trim(),avoid:$("brandAvoid").value.trim()};
+    await root.kv.brand.set(BM_KEY,b);
+    $("brandStatus").textContent="✅ บันทึกแล้ว"; refreshBrandUI();
+  };
+  $("brandClearBtn").onclick=async()=>{ await root.kv.brand.delete(BM_KEY); refreshBrandUI(); };
+  refreshBrandUI();
+
+  // ---- IMAGE ----
+  let lastImgUrl=null;
+  function pushImgHistory(prompt,url){
+    root.kv.history.get("imgs").then(async (arr)=>{
+      arr=arr||[];
+      arr.unshift({prompt,url,at:new Date().toISOString()});
+      arr=arr.slice(0,12);
+      try{await root.kv.history.set("imgs",arr);}catch(e){}
+      renderImgHistory(arr);
+    }).catch(()=>{});
+  }
+  async function renderImgHistory(arr){
+    try{ arr=arr||await root.kv.history.get("imgs")||[]; }catch(e){arr=[];}
+    const box=$("imgHistory");
+    if(!arr.length){box.innerHTML='<div class="muted">ยังไม่มีประวัติ — สร้างภาพแรกได้เลย</div>';return;}
+    box.innerHTML="";
+    arr.forEach(h=>{
+      const d=document.createElement("div"); d.className="history-item";
+      d.innerHTML=`<div>${h.prompt?h.prompt.replace(/</g,"&lt;"):""}</div><div class="muted">${h.at||""}</div>`;
+      if(h.url){const im=document.createElement("img");im.src=h.url;im.loading="lazy";d.appendChild(im);}
+      box.appendChild(d);
+    });
+  }
+  renderImgHistory();
+  $("imgClearHist").onclick=async()=>{await root.kv.history.delete("imgs");renderImgHistory();};
+
+  $("imgGenBtn").onclick=async()=>{
+    const btn=$("imgGenBtn"); btn.disabled=true;
+    const box=$("imgResult"); lastImgUrl=null; $("imgDlBtn").disabled=true;
+    box.innerHTML='<div><div class="spinner"></div><div class="loadline">กำลังวาดภาพ<span class="dots"></span> (10–40 วินาที)</div></div>';
+    $("imgStatus").textContent="กำลังสร้าง...";
+    try{
+      const b=await getBrand();
+      const base=$("imgPromptInput").value.trim()||"beautiful cozy cafe";
+      const styles=selectedStyles("styleChips");
+      const full=`${base}, ${styles}${b.style?`, ${b.style}`:""}${b.colors?`, brand colors ${b.colors}`:""}`;
+      const ratio=$("imgRatioSel").value||"768x768";
+      const neg=$("imgNegInput").value.trim();
+      const r=await root.generateImage(full,{resolution:ratio,negativePrompt:neg||undefined});
+      box.innerHTML="";
+      const img=document.createElement("img");
+      img.src=r.dataUrl; img.alt=full; img.style.width="100%"; img.style.height="auto";
+      box.appendChild(img);
+      lastImgUrl=r.dataUrl;
+      $("imgDlBtn").disabled=false;
+      $("imgStatus").textContent="✅ เสร็จแล้ว — กดดาวน์โหลดได้เลย";
+      pushImgHistory(full, r.dataUrl);
+    }catch(e){
+      console.warn(e);
+      box.innerHTML='<div class="muted" style="padding:20px">❌ สร้างไม่สำเร็จ: '+(e&&e.message?e.message:e)+' — รอ 10 วินาทีแล้วลองใหม่ อย่ากดรัว</div>';
+      $("imgStatus").textContent="เกิดข้อผิดพลาด ลองใหม่อีกครั้ง";
+    }finally{btn.disabled=false;}
+  };
+  $("imgDlBtn").onclick=()=>{
+    if(!lastImgUrl) return;
+    const a=document.createElement("a"); a.href=lastImgUrl; a.download="auddy-tom-studio.png"; a.click();
+  };
+
+  // ---- TEXT (streaming, cancellable) ----
+  let txtHandle=null;
+  const TYPE_PROMPT={
+    caption:"เขียนแคปชันขายของภาษาไทย 3 เวอร์ชัน (สั้น/กลาง/ยาว) พร้อม call-to-action และ hashtag 10 อัน",
+    seo:"เขียนบทความ SEO ภาษาไทย มีหัวข้อ H2/H3 เปิดด้วย hook สรุปท้ายบทความ",
+    script:"เขียนสคริปต์วิดีโอ 60 วินาที แบ่งเป็นฉาก 0-3s hook / เนื้อหา / CTA พร้อมคำพูดพิธีกร",
+    slogan:"คิดสโลแกน 10 แบบ พร้อมคำอธิบายสั้นๆ ว่าแต่ละอันดีตรงไหน แล้วเลือก top 3",
+    story:"เขียนเรื่องสั้นภาษาไทย 300-500 คำ เปิดเรื่องดึงดูด จบประทับใจ"
+  };
+  $("txtGenBtn").onclick=async()=>{
+    if(txtHandle&&txtHandle.stop) try{txtHandle.stop();}catch(e){}
+    const topic=$("txtTopicInput").value.trim()||"สินค้าใหม่";
+    const type=$("txtTypeSel").value;
+    const tone=singleSelected("toneChips")||"เป็นกันเอง";
+    const b=await getBrand();
+    const instruction=`งาน: ${TYPE_PROMPT[type]}\nหัวข้อ/บรีฟ: ${topic}\nโทนเสียง: ${tone}${b.tone?` (brand tone: ${b.tone})`:""}${b.name?`\nแบรนด์: ${b.name}`:""}${b.avoid?`\nข้อห้าม: ${b.avoid}`:""}\nภาษา: ภาษาไทยเป็นหลัก อ่านง่าย ขายได้จริง ห้ามมีลิงก์ปลอม ห้ามอ้าง URL ถ้าไม่จำเป็น`;
+    const out=$("txtOut"); out.textContent="";
+    $("txtStatus").textContent="กำลังเขียน..."; $("txtStopBtn").disabled=false; $("txtGenBtn").disabled=true;
+    try{
+      const p=root.generateText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar;}});
+      txtHandle=p;
+      const final=await p;
+      out.textContent=final.text||final;
+      $("txtStatus").textContent="✅ เสร็จแล้ว";
+      const arr=(await root.kv.history.get("texts").catch(()=>null))||[];
+      arr.unshift({topic,type,text:String(final).slice(0,2000),at:new Date().toISOString()});
+      await root.kv.history.set("texts",arr.slice(0,10)).catch(()=>{});
+    }catch(e){ out.textContent="❌ เขียนไม่สำเร็จ: "+(e&&e.message?e.message:e); $("txtStatus").textContent="ลองใหม่อีกครั้ง";
+    }finally{$("txtStopBtn").disabled=true;$("txtGenBtn").disabled=false;txtHandle=null;}
+  };
+  $("txtStopBtn").onclick=()=>{ if(txtHandle&&txtHandle.stop) txtHandle.stop(); $("txtStatus").textContent="หยุดแล้ว"; $("txtStopBtn").disabled=true; $("txtGenBtn").disabled=false; };
+  $("txtCopyBtn").onclick=async()=>{ try{await navigator.clipboard.writeText($("txtOut").textContent);$("txtStatus").textContent="📋 คัดลอกแล้ว";}catch(e){$("txtStatus").textContent="คัดลอกไม่ได้ ให้ลากคลุมแล้ว Ctrl+C";} };
+
+  // ---- UIUX ----
+  function paletteFor(idea){
+    const sets=[["#ff5c1a","#17130e","#fafaf8","#ffb78f"],["#7c3aed","#0ea5e9","#f5f3ff","#17130e"],["#0f7b3d","#d9f2e3","#17130e","#ffce00"],["#e11d48","#111827","#fff1f2","#fbbf24"]];
+    let h=0; for(const c of idea) h=(h*31+c.charCodeAt(0))>>>0;
+    return sets[h%sets.length];
+  }
+  function paintPalette(colors){
+    const box=$("uiPalette"); box.innerHTML="";
+    colors.forEach(c=>{
+      const d=document.createElement("div");
+      d.style.cssText="display:flex;align-items:center;gap:8px;font-size:13px";
+      d.innerHTML=`<span style="width:26px;height:26px;border-radius:8px;background:${c};border:1px solid #ddd;display:inline-block"></span><code>${c}</code>`;
+      box.appendChild(d);
+    });
+  }
+  $("uiGenBtn").onclick=async()=>{
+    const idea=$("uiIdeaInput").value.trim()||"แอปใหม่";
+    const b=await getBrand();
+    paintPalette(paletteFor(idea+(b.colors||"")));
+    const out=$("uiOut"); out.textContent=""; $("uiStatus").textContent="กำลังออกแบบ..."; $("uiGenBtn").disabled=true;
+    const instruction=`คุณคือนักออกแบบ UI/UX อาวุโส ตอบเป็นภาษาไทย โครงสร้าง:\n1) สรุปแนวคิด 1 ย่อหน้า\n2) ผู้ใช้ 3 กลุ่ม + งานหลักของแต่ละกลุ่ม\n3) โครงหน้า 5 จอ (ชื่อจอ / องค์ประกอบ / CTA)\n4) UX flow 6 ขั้น\n5) พาเลตต์สี 4 สี (hex) + ฟอนต์แนะนำ\n6) 3 หลัก UX ที่ต้องระวัง\n7) image prompt ภาษาอังกฤษ 1 ย่อหน้าสำหรับทำ moodboard\nไอเดีย: ${idea}${b.name?`\nแบรนด์: ${b.name}, โทน ${b.tone||"-"}, สี ${b.colors||"-"}, ห้าม ${b.avoid||"-"}`:""}\nห้ามใส่ลิงก์ปลอม`;
+    try{
+      const r=await root.generateText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar;}});
+      out.textContent=r.text||r; $("uiStatus").textContent="✅ เสร็จแล้ว";
+    }catch(e){out.textContent="❌ เกิดข้อผิดพลาด: "+(e&&e.message?e.message:e);}
+    finally{$("uiGenBtn").disabled=false;}
+  };
+  $("uiCopyBtn").onclick=async()=>{try{await navigator.clipboard.writeText($("uiOut").textContent);$("uiStatus").textContent="📋 คัดลอกแล้ว";}catch(e){}};
+  $("uiMoodBtn").onclick=async()=>{
+    const idea=$("uiIdeaInput").value.trim();
+    const box=$("uiImgResult"); box.hidden=false;
+    box.innerHTML='<div><div class="spinner"></div><div class="loadline">กำลังวาดมู้ดบอร์ด<span class="dots"></span></div></div>';
+    try{
+      const b=await getBrand();
+      const r=await root.generateImage(`app UI moodboard collage, ${idea}, clean minimal, ${b.style||"modern soft"}, high quality`,{resolution:"768x512"});
+      box.innerHTML=""; const im=document.createElement("img"); im.src=r.dataUrl; im.style.width="100%"; box.appendChild(im);
+    }catch(e){box.innerHTML='<div class="muted" style="padding:16px">วาดมู้ดบอร์ดไม่สำเร็จ ลองใหม่อีกครั้ง</div>';}
+  };
+
+  // ---- VIDEO ----
+  $("vidGenBtn").onclick=async()=>{
+    const idea=$("vidIdeaInput").value.trim()||"โฆษณาสินค้า";
+    const len=$("vidLenSel").value;
+    const b=await getBrand();
+    const out=$("vidOut"); out.textContent=""; $("vidStatus").textContent="กำลังแตกช็อต..."; $("vidGenBtn").disabled=true;
+    const instruction=`คุณคือผู้กำกับโฆษณา เขียนสตอรี่บอร์ดภาษาไทย สำหรับวิดีโอ "${idea}" ความยาว ${len}\nโครง: ตารางช็อต (เวลา/ภาพ/มุมกล้อง/เสียง/บทพูด) 6-10 ช็อต, shot list ถ่ายจริง, prompt ภาษาอังกฤษ 3 อันสำหรับเครื่องมือ AI video (เช่น runway/pika), เพลง/ซาวด์แนะนำ\n${b.name?`แบรนด์ ${b.name} โทน ${b.tone||""}`:""}\nห้ามใส่ลิงก์จริง ให้บอกชื่อเครื่องมือเป็นข้อความเท่านั้น`;
+    try{
+      const r=await root.generateText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar;}});
+      out.textContent=r.text||r; $("vidStatus").textContent="✅ เสร็จแล้ว เอา prompt ไปวางในเครื่องมือวิดีโอได้เลย";
+    }catch(e){out.textContent="❌ "+(e&&e.message?e.message:e);}
+    finally{$("vidGenBtn").disabled=false;}
+  };
+  $("vidCopyBtn").onclick=async()=>{try{await navigator.clipboard.writeText($("vidOut").textContent);$("vidStatus").textContent="📋 คัดลอกแล้ว";}catch(e){}};
+
+  // ---- 3D ----
+  $("tdPromptBtn").onclick=async()=>{
+    const obj=$("tdObjInput").value.trim()||"cute robot";
+    const st=singleSelected("tdStyleChips");
+    const b=await getBrand();
+    $("tdStatus").textContent="กำลังเขียน prompt...";
+    try{
+      const r=await root.generateText({instruction:`Write ONE excellent English text-to-3d / text-to-image 3D render prompt for: "${obj}". Style: ${st}. Include: subject detail, materials, lighting, camera angle, background, quality keywords (octane, 8k, subsurface scattering...), negative prompt line. Then Thai explanation 3 บรรทัดว่าทำไม prompt นี้ดี. Brand context: ${b.style||"-"}. No fake links.`});
+      $("tdOut").textContent=r.text||r; $("tdStatus").textContent="✅ ได้ prompt แล้ว — กดสร้างภาพพรีวิวได้เลย";
+    }catch(e){$("tdOut").textContent="❌ "+(e&&e.message?e.message:e);}
+  };
+  $("tdImgBtn").onclick=async()=>{
+    const obj=$("tdObjInput").value.trim()||"cute robot";
+    const st=singleSelected("tdStyleChips");
+    const box=$("tdImgResult"); box.hidden=false;
+    box.innerHTML='<div><div class="spinner"></div><div class="loadline">กำลังเรนเดอร์พรีวิว<span class="dots"></span></div></div>';
+    $("tdStatus").textContent="กำลังสร้างภาพ...";
+    try{
+      const r=await root.generateImage(`${obj}, ${st}, centered, studio lighting, high detail, masterpiece`,{resolution:"768x768"});
+      box.innerHTML=""; const im=document.createElement("img"); im.src=r.dataUrl; im.style.width="100%"; box.appendChild(im);
+      $("tdStatus").textContent="✅ เสร็จแล้ว";
+    }catch(e){box.innerHTML='<div class="muted" style="padding:16px">สร้างไม่สำเร็จ ลองใหม่อีกครั้ง</div>';}
+  };
+  $("tdCopyBtn").onclick=async()=>{try{await navigator.clipboard.writeText($("tdOut").textContent);$("tdStatus").textContent="📋 คัดลอกแล้ว";}catch(e){}};
+
+  // ---- Gallery ----
+  function renderGallery(sort){
+    const box=$("galleryBox"); box.innerHTML='<div class="muted" style="padding:18px">กำลังโหลดแกลเลอรี...</div>';
+    try{
+      box.innerHTML=root.generateImage({gallery:true,sort:sort||"recent",adaptiveHeight:true});
+    }catch(e){box.innerHTML='<div class="muted" style="padding:18px">โหลดแกลเลอรีไม่ได้ตอนนี้ (ยังไม่มีภาพที่เซฟ หรือเครือข่ายขัดข้อง)</div>';}
+  }
+  $("galRecent").onclick=()=>renderGallery("recent");
+  $("galTop").onclick=()=>renderGallery("top");
+
+  go("home");
+})();
+</script>

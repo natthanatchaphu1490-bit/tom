@@ -127,6 +127,7 @@
         <button class="chip" data-quick="uiux">🧩 เป็นไอเดียแอป</button>
         <button class="chip" data-quick="video">🎬 เป็นสตอรี่บอร์ด</button>
         <button class="chip" data-quick="3d">🧊 เป็น 3D prompt</button>
+        <button class="chip" data-quick="motion">🎞️ เป็นภาพเคลื่อนไหว</button>
       </div>
       <div class="mini">ทิป: ตั้งค่า <b style="color:#fff">Brand Memory</b> ก่อน งานทุกชิ้นจะออนแบรนด์อัตโนมัติ — <a href="#" data-go="brand" style="color:#ffb78f">ไปตั้งค่า →</a></div>
     </div>
@@ -143,6 +144,7 @@
       <div class="card feat"><i>🧩</i><div><b>UI/UX Idea Lab</b><div class="muted">เปลี่ยนไอเดียเป็นโครงแอป: โครงหน้า สี ฟอนต์ UX flow และ prompt สำหรับทำต่อ</div><div style="height:8px"></div><button class="btn btn-dark" data-go="uiux">เปิดเครื่องมือ</button></div></div>
       <div class="card feat"><i>🎬</i><div><b>Video Storyboard</b><div class="muted">แตกไอเดียเป็นช็อตต่อช็อต: มุมกล้อง เสียง ระยะเวลา + prompt สำหรับเครื่องมือวิดีโอ</div><div style="height:8px"></div><button class="btn btn-dark" data-go="video">เปิดเครื่องมือ</button></div></div>
       <div class="card feat"><i>🧊</i><div><b>3D Prompt Maker</b><div class="muted">เขียน prompt งาน 3D ให้เรนเดอร์สวย (clay / octane / isometric) พร้อมภาพพรีวิว</div><div style="height:8px"></div><button class="btn btn-dark" data-go="3d">เปิดเครื่องมือ</button></div></div>
+      <div class="card feat"><i>🎞️</i><div><b>Motion Lab</b><div class="muted">อัปโหลดรูป/วิดีโอ ใส่คำพูดซับไตเติล สั่งให้ขยับด้วยภาษาไทย ส่งออกเป็นวิดีโอได้</div><div style="height:8px"></div><button class="btn btn-dark" data-go="motion">เปิดเครื่องมือ</button></div></div>
       <div class="card feat"><i>🧠</i><div><b>Brand Memory</b><div class="muted">จำชื่อแบรนด์ โทน สี สไตล์ ไว้ในเครื่อง งานทุกชิ้นดึงไปใช้เองอัตโนมัติ</div><div style="height:8px"></div><button class="btn btn-dark" data-go="brand">ตั้งค่า</button></div></div>
     </div>
     <div class="card" style="margin-top:14px">
@@ -152,7 +154,7 @@
         <div>2️⃣ พิมพ์บรีฟสั้นๆ ที่หน้าเครื่องมือที่ต้องการ แล้วกดสร้าง</div>
         <div>3️⃣ เซฟ / ดาวน์โหลด / ดูประวัติย้อนหลังได้ ทุกอย่างอยู่ในเครื่องคุณ</div>
       </div>
-      <div class="muted">หมายเหตุซื่อสัตย์: เว็บนี้สร้างใหม่ทั้งหมดโดยได้แรงบันดาลใจจาก miora.design ไม่ได้คัดลอกโค้ดหรือรูปของ Miora มาใช้ โมเดลภาพ/ข้อความใช้ฟรีโควต้าของ Perchance • วิดีโอจริงยังเรนเดอร์ในเบราว์เซอร์ไม่ได้ จึงให้เป็นสตอรี่บอร์ด+prompt เอาไปทำต่อได้ทันที</div>
+      <div class="muted">หมายเหตุซื่อสัตย์: เว็บนี้สร้างใหม่ทั้งหมดโดยได้แรงบันดาลใจจาก miora.design ไม่ได้คัดลอกโค้ดหรือรูปของ Miora มาใช้ โมเดลภาพ/ข้อความใช้ฟรีโควต้าของ Perchance • อยากได้วิดีโอขยับได้ให้ใช้ห้อง “🎞️ โมชั่น” (ใส่รูป/วิดีโอ + คำพูด + สั่งด้วยภาษาไทย ส่งออก .webm ได้) หรือสตอรี่บอร์ด+prompt เอาไปทำต่อได้ทันที</div>
     </div>
   </section>
 
@@ -301,6 +303,59 @@
     </div>
   </section>
 
+  <!-- MOTION -->
+  <section class="page" data-page="motion">
+    <div class="card">
+      <h2 style="margin:0">🎞️ Motion Lab — รูป/วิดีโอขยับได้ตามคำสั่ง <span class="pill-free">ฟรี</span></h2>
+      <div class="muted">อัปโหลดรูปหรือวิดีโอ → ใส่<b>คำพูด/ซับไตเติล</b> → พิมพ์คำสั่งภาษาไทย (เช่น “ซูมเข้าช้าๆ แล้วแพนขวา วนไปกลับ”) → กดเล่น → ส่งออกเป็นวิดีโอ .webm ได้ • ไฟล์อยู่แค่ในเครื่อง ไม่ส่งออกไปไหน</div>
+      <div class="grid2">
+        <div>
+          <label>1) ใส่รูปหรือวิดีโอ</label>
+          <input id="motFileInput" type="file" accept="image/*,video/*" />
+          <div class="row" style="margin-top:8px">
+            <button class="btn btn-ghost" id="motDemoBtn">🖼️ ใช้ภาพตัวอย่าง</button>
+            <span class="muted" id="motFileStatus">ยังไม่มีไฟล์ — ใช้ภาพตัวอย่างก่อนก็ได้</span>
+          </div>
+        </div>
+        <div>
+          <label>2) คำสั่งโมชั่น (ไทย / อังกฤษ)</label>
+          <input id="motCmdInput" type="text" value="ซูมเข้าช้าๆ แล้วแพนขวา วนไปกลับ" />
+          <div class="row" id="motPresets" style="margin-top:8px">
+            <button class="preset">🎬 ซูมหนังช้าๆ วนไปกลับ</button>
+            <button class="preset">📱 แพนขวาเร็ว ครั้งเดียว</button>
+            <button class="preset">🎉 เด้งสนุก + ซูมเข้า</button>
+            <button class="preset">📸 สั่นกล้องแอคชั่น</button>
+            <button class="preset">🔄 หมุนครบรอบ</button>
+          </div>
+        </div>
+      </div>
+      <label>3) คำพูดบนวิดีโอ (ซับไตเติล — บรรทัดละ 1 ข้อความ, ใส่เวลาแบบ 0-3วิ ข้อความ...)</label>
+      <textarea id="motCapInput" style="min-height:70px">0-3วิ ✨ AUDDY&TOM Studio
+3-6วิ สร้างวิดีโอจากรูปเดียว ได้ใน 1 นาที!</textarea>
+      <div class="grid3" style="margin-top:10px">
+        <div><label>ความยาวต่อรอบ</label><select id="motDurSel"><option value="3">3 วินาที</option><option value="5" selected>5 วินาที</option><option value="8">8 วินาที</option><option value="10">10 วินาที</option></select></div>
+        <div><label>ความเร็ว</label><select id="motSpeedSel"><option value="0.5">0.5x ช้ามาก</option><option value="1" selected>1x ปกติ</option><option value="1.5">1.5x เร็ว</option><option value="2">2x เร็วมาก</option></select></div>
+        <div><label>ตัวเลือก</label><div class="row"><label style="font-weight:400"><input type="checkbox" id="motLoopChk" checked /> วนซ้ำ</label><label style="font-weight:400"><input type="checkbox" id="motBoomChk" checked /> ไปกลับ</label></div></div>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn btn-brand" id="motPlayBtn">▶️ เล่นตามคำสั่ง</button>
+        <button class="btn btn-ghost" id="motStopBtn">⏹ หยุด</button>
+        <button class="btn btn-dark" id="motAiBtn">🤖 ให้ AI แต่งโมชั่น</button>
+        <button class="btn btn-dark" id="motExportBtn">🎥 ส่งออก .webm</button>
+        <span class="muted" id="motStatus">พร้อม — เลือกไฟล์หรือกดภาพตัวอย่างก่อน</span>
+      </div>
+      <div class="img-result" style="background:#000;margin-top:12px">
+        <canvas id="motCanvas" width="960" height="540" style="width:100%;height:auto;display:block;border-radius:12px"></canvas>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <a id="motDl" class="btn btn-brand" hidden style="text-decoration:none">⬇️ ดาวน์โหลดวิดีโอ .webm</a>
+        <span class="muted">ไทม์ไลน์ที่แปลจากคำสั่ง:</span>
+      </div>
+      <div class="out light" id="motTimeline">ยังไม่มี — พิมพ์คำสั่งแล้วกดเล่นได้เลย</div>
+      <div class="muted" style="margin-top:8px">ทิปคำสั่ง: ซูมเข้า/ออก • แพนซ้าย/ขวา/ขึ้น/ลง • หมุน/หมุนครบรอบ • สั่น • เด้ง • ค่อยๆจาง • ช้า/เร็ว • มาก/นิดหน่อย • วนซ้ำ/ครั้งเดียว • ไปกลับ • ใส่เวลาเช่น “8วิ”</div>
+    </div>
+  </section>
+
   <!-- BRAND -->
   <section class="page" data-page="brand">
     <div class="card">
@@ -344,7 +399,7 @@
       <h2 style="margin:0">💚 ราคา: ฟรีตลอดไป</h2>
       <p class="muted">ไม่มีแผน Pro ไม่มีล็อกฟีเจอร์ ทุกเมนูข้างบนใช้ได้หมด — ต้นทุนรันโดยโควต้าฟรีของ Perchance (AI ข้อความ/ภาพ) + ที่เก็บในเครื่องคุณ</p>
       <div class="grid3" style="text-align:left;margin-top:12px">
-        <div class="card" style="box-shadow:none"><b>🆓 Free — ฿0</b><div class="klist"><div>✅ สร้างภาพไม่จำกัด (ตามคิวว่าง)</div><div>✅ เขียนคอนเทนต์ / UI / สตอรี่บอร์ด / 3D</div><div>✅ Brand Memory + ประวัติในเครื่อง</div><div>✅ แกลเลอรีสาธารณะ</div></div><button class="btn btn-brand" data-go="image" style="width:100%">เริ่มใช้เลย</button></div>
+        <div class="card" style="box-shadow:none"><b>🆓 Free — ฿0</b><div class="klist"><div>✅ สร้างภาพไม่จำกัด (ตามคิวว่าง)</div><div>✅ เขียนคอนเทนต์ / UI / สตอรี่บอร์ด / 3D / โมชั่น</div><div>✅ Brand Memory + ประวัติในเครื่อง</div><div>✅ แกลเลอรีสาธารณะ</div></div><button class="btn btn-brand" data-go="image" style="width:100%">เริ่มใช้เลย</button></div>
         <div class="card" style="box-shadow:none"><b>📦 สิ่งที่เราไม่ทำ</b><div class="klist"><div>❌ ไม่บังคับสมัคร / ไม่เก็บอีเมล</div><div>❌ ไม่ล็อกความละเอียดภาพ</div><div>❌ ไม่ฝังลายน้ำในภาพที่โหลด</div></div></div>
         <div class="card" style="box-shadow:none"><b>⚖️ ข้อจำกัดซื่อสัตย์</b><div class="klist"><div>⏳ ช่วงคนเยอะ AI อาจต่อคิวหลายวินาที</div><div>🎬 วิดีโอจริงยังเรนเดอร์ให้ไม่ได้ (ให้เป็นสตอรี่บอร์ดแทน)</div><div>🖼️ ภาพ NSFW อาจถูกกรองโดยระบบ</div></div></div>
       </div>
@@ -378,11 +433,51 @@
 
 <script>
 (function(){
-  "use strict";
+  // Plugin resolver แบบทนทาน: รอ import โหลดอัตโนมัติ ไม่ต้องรีเฟรช ไม่ใช้ alert
+  function plug(name){
+    try{ if(typeof root!=="undefined"&&root&&root[name]!==undefined&&root[name]!==null) return root[name]; }catch(e){}
+    try{ if(typeof globalThis!=="undefined"&&globalThis[name]!==undefined) return globalThis[name]; }catch(e){}
+    try{ if(typeof window!=="undefined"&&window[name]!==undefined) return window[name]; }catch(e){}
+    try{ const v=eval(name); if(v!==undefined&&v!==null) return v; }catch(e){}
+    return undefined;
+  }
+  const PLUG_ERR="ปลั๊กอิน AI ยังโหลดไม่เสร็จ — ระบบกำลังรอให้อัตโนมัติ ไม่ต้องรีเฟรช";
+  function waitPlug(name, timeoutMs){
+    timeoutMs = timeoutMs || 25000;
+    const start = Date.now();
+    return new Promise((resolve)=>{
+      function tick(){
+        let f=null;
+        try{ f=plug(name); }catch(e){ f=null; }
+        if(f){ resolve(f); return; }
+        if(Date.now()-start>=timeoutMs){ resolve(null); return; }
+        setTimeout(tick,250);
+      }
+      tick();
+    });
+  }
+  // รอเฉพาะปลั๊กอินที่เครื่องมือนั้นต้องใช้จริง (video ใช้แค่ generateText เป็นต้น)
+  // คืน object {generateText, generateImage, kv} เท่าที่ขอ หรือ null ถ้าหมดเวลา
+  async function ensurePlugs(names, statusEl, outEl){
+    const got={};
+    for(const n of names){
+      if(plug(n)){ got[n]=plug(n); continue; }
+      if(statusEl) statusEl.textContent="⏳ กำลังรอปลั๊กอิน "+n+" โหลด... (ครั้งแรกอาจใช้เวลา 5–20 วินาที ไม่ต้องรีเฟรช)";
+      const f=await waitPlug(n,30000);
+      if(!f){
+        const msg="❌ โหลดปลั๊กอิน "+n+" ไม่สำเร็จ — ตรวจเน็ตแล้วรอ 10 วินาที แล้วกดปุ่มเดิมอีกครั้งได้เลย (ไม่ต้องรีเฟรชทั้งหน้า)";
+        if(outEl) outEl.textContent=msg;
+        if(statusEl) statusEl.textContent=msg;
+        return null;
+      }
+      got[n]=f;
+    }
+    return got;
+  }
   const $ = (id)=>document.getElementById(id);
   const PAGES = [
     ["home","🏠 หน้าแรก"],["image","🎨 สร้างภาพ"],["content","✍️ คอนเทนต์"],
-    ["uiux","🧩 UI/UX"],["video","🎬 สตอรี่บอร์ด"],["3d","🧊 3D"],
+    ["uiux","🧩 UI/UX"],["video","🎬 สตอรี่บอร์ด"],["3d","🧊 3D"],["motion","🎞️ โมชั่น"],
     ["brand","🧠 แบรนด์"],["gallery","🖼️ แกลเลอรี"],["pricing","💚 ราคา"],["faq","❓ FAQ"]
   ];
   const navEl = $("navEl"), mnavEl = $("mnavEl");
@@ -417,6 +512,7 @@
       else if(q==="uiux"){$("uiIdeaInput").value=v; go("uiux");}
       else if(q==="video"){$("vidIdeaInput").value=v; go("video");}
       else if(q==="3d"){$("tdObjInput").value=v; go("3d");}
+      else if(q==="motion"){$("motCmdInput").value="ซูมเข้าช้าๆ "+v+" วนไปกลับ"; go("motion");}
     }
   });
 
@@ -441,7 +537,11 @@
   // ---- Brand memory (kv) ----
   const BM_KEY="brand-memory-v1";
   async function getBrand(){
-    try{ return (await root.kv.brand.get(BM_KEY)) || {}; }catch(e){ return {}; }
+    try{
+      const kv=plug("kv");
+      if(!kv||!kv.brand) return {};
+      return (await kv.brand.get(BM_KEY)) || {};
+    }catch(e){ return {}; }
   }
   function brandLine(b){
     const parts=[];
@@ -452,8 +552,17 @@
     if(b.avoid) parts.push(`ห้าม: ${b.avoid}`);
     return parts.length?(" (Brand: "+parts.join(" | ")+")"):"";
   }
-  async function refreshBrandUI(){
-    const b=await getBrand();
+  async function refreshBrandUI(retry){
+    const kv0=plug("kv");
+    if(!kv0){
+      $("brandStatus").textContent="⏳ กำลังรอที่เก็บความจำโหลด...";
+      if(retry!==false){
+        const kv=await waitPlug("kv",20000);
+        if(!kv){ $("brandStatus").textContent="⚠️ โหลดที่เก็บความจำไม่ได้ตอนนี้ — ตั้งค่าได้ แต่บันทึกอาจยังไม่ได้"; return; }
+      } else return;
+    }
+    let b={};
+    try{ b=(await plug("kv").brand.get(BM_KEY))||{}; }catch(e){ b={}; }
     if($("brandName")) $("brandName").value=b.name||"";
     if($("brandTone")) $("brandTone").value=b.tone||"";
     if($("brandColors")) $("brandColors").value=b.colors||"";
@@ -465,26 +574,36 @@
       : "ยังไม่มี Brand Memory — งาน AI จะใช้แค่บรีฟที่คุณพิมพ์";
   }
   $("brandSaveBtn").onclick=async()=>{
+    const kv=await waitPlug("kv",20000);
+    if(!kv){ $("brandStatus").textContent="❌ ที่เก็บความจำยังไม่พร้อม — รอ 10 วินาทีแล้วกดบันทึกอีกครั้ง"; return; }
     const b={name:$("brandName").value.trim(),tone:$("brandTone").value.trim(),colors:$("brandColors").value.trim(),style:$("brandStyle").value.trim(),avoid:$("brandAvoid").value.trim()};
-    await root.kv.brand.set(BM_KEY,b);
-    $("brandStatus").textContent="✅ บันทึกแล้ว"; refreshBrandUI();
+    try{ await kv.brand.set(BM_KEY,b); $("brandStatus").textContent="✅ บันทึกแล้ว"; }
+    catch(e){ $("brandStatus").textContent="❌ บันทึกไม่ได้: "+(e&&e.message?e.message:e); return; }
+    refreshBrandUI(false);
   };
-  $("brandClearBtn").onclick=async()=>{ await root.kv.brand.delete(BM_KEY); refreshBrandUI(); };
+  $("brandClearBtn").onclick=async()=>{
+    const kv=plug("kv");
+    if(!kv){ $("brandStatus").textContent="❌ ที่เก็บความจำยังไม่พร้อม"; return; }
+    try{ await kv.brand.delete(BM_KEY); }catch(e){}
+    refreshBrandUI(false);
+  };
   refreshBrandUI();
 
   // ---- IMAGE ----
   let lastImgUrl=null;
   function pushImgHistory(prompt,url){
-    root.kv.history.get("imgs").then(async (arr)=>{
+    const kv=plug("kv");
+    if(!kv) return;
+    kv.history.get("imgs").then(async (arr)=>{
       arr=arr||[];
       arr.unshift({prompt,url,at:new Date().toISOString()});
       arr=arr.slice(0,12);
-      try{await root.kv.history.set("imgs",arr);}catch(e){}
+      try{await kv.history.set("imgs",arr);}catch(e){}
       renderImgHistory(arr);
     }).catch(()=>{});
   }
   async function renderImgHistory(arr){
-    try{ arr=arr||await root.kv.history.get("imgs")||[]; }catch(e){arr=[];}
+    try{ const kv=plug("kv"); arr=arr||(kv?await kv.history.get("imgs"):[])||[]; }catch(e){arr=[];}
     const box=$("imgHistory");
     if(!arr.length){box.innerHTML='<div class="muted">ยังไม่มีประวัติ — สร้างภาพแรกได้เลย</div>';return;}
     box.innerHTML="";
@@ -496,21 +615,25 @@
     });
   }
   renderImgHistory();
-  $("imgClearHist").onclick=async()=>{await root.kv.history.delete("imgs");renderImgHistory();};
+  $("imgClearHist").onclick=async()=>{ const kv=plug("kv"); if(kv){try{await kv.history.delete("imgs");}catch(e){}} renderImgHistory([]); };
 
   $("imgGenBtn").onclick=async()=>{
     const btn=$("imgGenBtn"); btn.disabled=true;
     const box=$("imgResult"); lastImgUrl=null; $("imgDlBtn").disabled=true;
     box.innerHTML='<div><div class="spinner"></div><div class="loadline">กำลังวาดภาพ<span class="dots"></span> (10–40 วินาที)</div></div>';
-    $("imgStatus").textContent="กำลังสร้าง...";
+    $("imgStatus").textContent="⏳ กำลังเตรียมปลั๊กอิน...";
     try{
+      const plugs=await ensurePlugs(["generateImage"],$("imgStatus"),box);
+      if(!plugs){ btn.disabled=false; return; }
+      const GImg=plugs.generateImage;
+      $("imgStatus").textContent="กำลังสร้าง...";
       const b=await getBrand();
       const base=$("imgPromptInput").value.trim()||"beautiful cozy cafe";
       const styles=selectedStyles("styleChips");
       const full=`${base}, ${styles}${b.style?`, ${b.style}`:""}${b.colors?`, brand colors ${b.colors}`:""}`;
       const ratio=$("imgRatioSel").value||"768x768";
       const neg=$("imgNegInput").value.trim();
-      const r=await root.generateImage(full,{resolution:ratio,negativePrompt:neg||undefined});
+      const r=await GImg(full,{resolution:ratio,negativePrompt:neg||undefined});
       box.innerHTML="";
       const img=document.createElement("img");
       img.src=r.dataUrl; img.alt=full; img.style.width="100%"; img.style.height="auto";
@@ -544,19 +667,28 @@
     const topic=$("txtTopicInput").value.trim()||"สินค้าใหม่";
     const type=$("txtTypeSel").value;
     const tone=singleSelected("toneChips")||"เป็นกันเอง";
-    const b=await getBrand();
-    const instruction=`งาน: ${TYPE_PROMPT[type]}\nหัวข้อ/บรีฟ: ${topic}\nโทนเสียง: ${tone}${b.tone?` (brand tone: ${b.tone})`:""}${b.name?`\nแบรนด์: ${b.name}`:""}${b.avoid?`\nข้อห้าม: ${b.avoid}`:""}\nภาษา: ภาษาไทยเป็นหลัก อ่านง่าย ขายได้จริง ห้ามมีลิงก์ปลอม ห้ามอ้าง URL ถ้าไม่จำเป็น`;
     const out=$("txtOut"); out.textContent="";
-    $("txtStatus").textContent="กำลังเขียน..."; $("txtStopBtn").disabled=false; $("txtGenBtn").disabled=true;
+    $("txtStatus").textContent="⏳ กำลังเตรียมปลั๊กอิน..."; $("txtStopBtn").disabled=false; $("txtGenBtn").disabled=true;
     try{
-      const p=root.generateText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar;}});
+      const plugs=await ensurePlugs(["generateText"],$("txtStatus"),out);
+      if(!plugs){ $("txtStopBtn").disabled=true; $("txtGenBtn").disabled=false; return; }
+      const GText=plugs.generateText;
+      const b=await getBrand();
+      const instruction=`งาน: ${TYPE_PROMPT[type]}\nหัวข้อ/บรีฟ: ${topic}\nโทนเสียง: ${tone}${b.tone?` (brand tone: ${b.tone})`:""}${b.name?`\nแบรนด์: ${b.name}`:""}${b.avoid?`\nข้อห้าม: ${b.avoid}`:""}\nภาษา: ภาษาไทยเป็นหลัก อ่านง่าย ขายได้จริง ห้ามมีลิงก์ปลอม ห้ามอ้าง URL ถ้าไม่จำเป็น`;
+      $("txtStatus").textContent="กำลังเขียน...";
+      const p=GText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar||d.textChunk||"";}});
       txtHandle=p;
       const final=await p;
-      out.textContent=final.text||final;
+      out.textContent=(final&&final.text)||String(final||"");
       $("txtStatus").textContent="✅ เสร็จแล้ว";
-      const arr=(await root.kv.history.get("texts").catch(()=>null))||[];
-      arr.unshift({topic,type,text:String(final).slice(0,2000),at:new Date().toISOString()});
-      await root.kv.history.set("texts",arr.slice(0,10)).catch(()=>{});
+      try{
+        const kv=plug("kv");
+        if(kv){
+          const arr=(await kv.history.get("texts").catch(()=>null))||[];
+          arr.unshift({topic,type,text:String(final).slice(0,2000),at:new Date().toISOString()});
+          await kv.history.set("texts",arr.slice(0,10)).catch(()=>{});
+        }
+      }catch(e){}
     }catch(e){ out.textContent="❌ เขียนไม่สำเร็จ: "+(e&&e.message?e.message:e); $("txtStatus").textContent="ลองใหม่อีกครั้ง";
     }finally{$("txtStopBtn").disabled=true;$("txtGenBtn").disabled=false;txtHandle=null;}
   };
@@ -580,13 +712,15 @@
   }
   $("uiGenBtn").onclick=async()=>{
     const idea=$("uiIdeaInput").value.trim()||"แอปใหม่";
-    const b=await getBrand();
-    paintPalette(paletteFor(idea+(b.colors||"")));
     const out=$("uiOut"); out.textContent=""; $("uiStatus").textContent="กำลังออกแบบ..."; $("uiGenBtn").disabled=true;
-    const instruction=`คุณคือนักออกแบบ UI/UX อาวุโส ตอบเป็นภาษาไทย โครงสร้าง:\n1) สรุปแนวคิด 1 ย่อหน้า\n2) ผู้ใช้ 3 กลุ่ม + งานหลักของแต่ละกลุ่ม\n3) โครงหน้า 5 จอ (ชื่อจอ / องค์ประกอบ / CTA)\n4) UX flow 6 ขั้น\n5) พาเลตต์สี 4 สี (hex) + ฟอนต์แนะนำ\n6) 3 หลัก UX ที่ต้องระวัง\n7) image prompt ภาษาอังกฤษ 1 ย่อหน้าสำหรับทำ moodboard\nไอเดีย: ${idea}${b.name?`\nแบรนด์: ${b.name}, โทน ${b.tone||"-"}, สี ${b.colors||"-"}, ห้าม ${b.avoid||"-"}`:""}\nห้ามใส่ลิงก์ปลอม`;
     try{
-      const r=await root.generateText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar;}});
-      out.textContent=r.text||r; $("uiStatus").textContent="✅ เสร็จแล้ว";
+      const plugs=await ensurePlugs(["generateText"],$("uiStatus"),out);
+      if(!plugs){ $("uiGenBtn").disabled=false; return; }
+      const b=await getBrand();
+      paintPalette(paletteFor(idea+(b.colors||"")));
+      const instruction=`คุณคือนักออกแบบ UI/UX อาวุโส ตอบเป็นภาษาไทย โครงสร้าง:\n1) สรุปแนวคิด 1 ย่อหน้า\n2) ผู้ใช้ 3 กลุ่ม + งานหลักของแต่ละกลุ่ม\n3) โครงหน้า 5 จอ (ชื่อจอ / องค์ประกอบ / CTA)\n4) UX flow 6 ขั้น\n5) พาเลตต์สี 4 สี (hex) + ฟอนต์แนะนำ\n6) 3 หลัก UX ที่ต้องระวัง\n7) image prompt ภาษาอังกฤษ 1 ย่อหน้าสำหรับทำ moodboard\nไอเดีย: ${idea}${b.name?`\nแบรนด์: ${b.name}, โทน ${b.tone||"-"}, สี ${b.colors||"-"}, ห้าม ${b.avoid||"-"}`:""}\nห้ามใส่ลิงก์ปลอม`;
+      const r=await plugs.generateText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar||d.textChunk||"";}});
+      out.textContent=(r&&r.text)||String(r||""); $("uiStatus").textContent="✅ เสร็จแล้ว";
     }catch(e){out.textContent="❌ เกิดข้อผิดพลาด: "+(e&&e.message?e.message:e);}
     finally{$("uiGenBtn").disabled=false;}
   };
@@ -596,8 +730,10 @@
     const box=$("uiImgResult"); box.hidden=false;
     box.innerHTML='<div><div class="spinner"></div><div class="loadline">กำลังวาดมู้ดบอร์ด<span class="dots"></span></div></div>';
     try{
+      const plugs=await ensurePlugs(["generateImage"],null,box);
+      if(!plugs){ box.innerHTML='<div class="muted" style="padding:16px">❌ ปลั๊กอินรูปยังโหลดไม่เสร็จ — รอ 10 วินาทีแล้วกดอีกครั้ง</div>'; return; }
       const b=await getBrand();
-      const r=await root.generateImage(`app UI moodboard collage, ${idea}, clean minimal, ${b.style||"modern soft"}, high quality`,{resolution:"768x512"});
+      const r=await plugs.generateImage(`app UI moodboard collage, ${idea}, clean minimal, ${b.style||"modern soft"}, high quality`,{resolution:"768x512"});
       box.innerHTML=""; const im=document.createElement("img"); im.src=r.dataUrl; im.style.width="100%"; box.appendChild(im);
     }catch(e){box.innerHTML='<div class="muted" style="padding:16px">วาดมู้ดบอร์ดไม่สำเร็จ ลองใหม่อีกครั้ง</div>';}
   };
@@ -606,13 +742,19 @@
   $("vidGenBtn").onclick=async()=>{
     const idea=$("vidIdeaInput").value.trim()||"โฆษณาสินค้า";
     const len=$("vidLenSel").value;
-    const b=await getBrand();
     const out=$("vidOut"); out.textContent=""; $("vidStatus").textContent="กำลังแตกช็อต..."; $("vidGenBtn").disabled=true;
-    const instruction=`คุณคือผู้กำกับโฆษณา เขียนสตอรี่บอร์ดภาษาไทย สำหรับวิดีโอ "${idea}" ความยาว ${len}\nโครง: ตารางช็อต (เวลา/ภาพ/มุมกล้อง/เสียง/บทพูด) 6-10 ช็อต, shot list ถ่ายจริง, prompt ภาษาอังกฤษ 3 อันสำหรับเครื่องมือ AI video (เช่น runway/pika), เพลง/ซาวด์แนะนำ\n${b.name?`แบรนด์ ${b.name} โทน ${b.tone||""}`:""}\nห้ามใส่ลิงก์จริง ให้บอกชื่อเครื่องมือเป็นข้อความเท่านั้น`;
     try{
-      const r=await root.generateText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar;}});
-      out.textContent=r.text||r; $("vidStatus").textContent="✅ เสร็จแล้ว เอา prompt ไปวางในเครื่องมือวิดีโอได้เลย";
-    }catch(e){out.textContent="❌ "+(e&&e.message?e.message:e);}
+      const plugs=await ensurePlugs(["generateText"],$("vidStatus"),out);
+      if(!plugs){ $("vidGenBtn").disabled=false; return; }
+      const b=await getBrand();
+      const instruction=`คุณคือผู้กำกับโฆษณา เขียนสตอรี่บอร์ดภาษาไทย สำหรับวิดีโอ "${idea}" ความยาว ${len}\nโครง: ตารางช็อต (เวลา/ภาพ/มุมกล้อง/เสียง/บทพูด) 6-10 ช็อต, shot list ถ่ายจริง, prompt ภาษาอังกฤษ 3 อันสำหรับเครื่องมือ AI video (เช่น runway/pika), เพลง/ซาวด์แนะนำ\n${b.name?`แบรนด์ ${b.name} โทน ${b.tone||""}`:""}\nห้ามใส่ลิงก์จริง ให้บอกชื่อเครื่องมือเป็นข้อความเท่านั้น`;
+      const r=await plugs.generateText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar||d.textChunk||"";}});
+      out.textContent=(r&&r.text)||String(r||""); $("vidStatus").textContent="✅ เสร็จแล้ว เอา prompt ไปวางในเครื่องมือวิดีโอได้เลย";
+    }catch(e){
+      console.warn(e);
+      out.textContent="❌ "+(e&&e.message?e.message:e)+" — รอ 10 วินาทีแล้วกดปุ่มเดิมอีกครั้งได้เลย";
+      $("vidStatus").textContent="เกิดข้อผิดพลาด ลองใหม่อีกครั้ง";
+    }
     finally{$("vidGenBtn").disabled=false;}
   };
   $("vidCopyBtn").onclick=async()=>{try{await navigator.clipboard.writeText($("vidOut").textContent);$("vidStatus").textContent="📋 คัดลอกแล้ว";}catch(e){}};
@@ -621,11 +763,13 @@
   $("tdPromptBtn").onclick=async()=>{
     const obj=$("tdObjInput").value.trim()||"cute robot";
     const st=singleSelected("tdStyleChips");
-    const b=await getBrand();
     $("tdStatus").textContent="กำลังเขียน prompt...";
     try{
-      const r=await root.generateText({instruction:`Write ONE excellent English text-to-3d / text-to-image 3D render prompt for: "${obj}". Style: ${st}. Include: subject detail, materials, lighting, camera angle, background, quality keywords (octane, 8k, subsurface scattering...), negative prompt line. Then Thai explanation 3 บรรทัดว่าทำไม prompt นี้ดี. Brand context: ${b.style||"-"}. No fake links.`});
-      $("tdOut").textContent=r.text||r; $("tdStatus").textContent="✅ ได้ prompt แล้ว — กดสร้างภาพพรีวิวได้เลย";
+      const plugs=await ensurePlugs(["generateText"],$("tdStatus"),$("tdOut"));
+      if(!plugs) return;
+      const b=await getBrand();
+      const r=await plugs.generateText({instruction:`Write ONE excellent English text-to-3d / text-to-image 3D render prompt for: "${obj}". Style: ${st}. Include: subject detail, materials, lighting, camera angle, background, quality keywords (octane, 8k, subsurface scattering...), negative prompt line. Then Thai explanation 3 บรรทัดว่าทำไม prompt นี้ดี. Brand context: ${b.style||"-"}. No fake links.`});
+      $("tdOut").textContent=(r&&r.text)||String(r||""); $("tdStatus").textContent="✅ ได้ prompt แล้ว — กดสร้างภาพพรีวิวได้เลย";
     }catch(e){$("tdOut").textContent="❌ "+(e&&e.message?e.message:e);}
   };
   $("tdImgBtn").onclick=async()=>{
@@ -635,19 +779,267 @@
     box.innerHTML='<div><div class="spinner"></div><div class="loadline">กำลังเรนเดอร์พรีวิว<span class="dots"></span></div></div>';
     $("tdStatus").textContent="กำลังสร้างภาพ...";
     try{
-      const r=await root.generateImage(`${obj}, ${st}, centered, studio lighting, high detail, masterpiece`,{resolution:"768x768"});
+      const plugs=await ensurePlugs(["generateImage"],$("tdStatus"),box);
+      if(!plugs) return;
+      const r=await plugs.generateImage(`${obj}, ${st}, centered, studio lighting, high detail, masterpiece`,{resolution:"768x768"});
       box.innerHTML=""; const im=document.createElement("img"); im.src=r.dataUrl; im.style.width="100%"; box.appendChild(im);
       $("tdStatus").textContent="✅ เสร็จแล้ว";
     }catch(e){box.innerHTML='<div class="muted" style="padding:16px">สร้างไม่สำเร็จ ลองใหม่อีกครั้ง</div>';}
   };
   $("tdCopyBtn").onclick=async()=>{try{await navigator.clipboard.writeText($("tdOut").textContent);$("tdStatus").textContent="📋 คัดลอกแล้ว";}catch(e){}};
 
+  // ---- MOTION LAB ----
+  const MC=$("motCanvas"), MX=MC.getContext("2d");
+  const MV=document.createElement("video");
+  MV.muted=true; MV.loop=true; MV.playsInline=true; MV.preload="auto"; MV.style.display="none";
+  document.body.appendChild(MV);
+  const ML={src:null,sw:960,sh:540,kind:null,playing:false,raf:0,t0:0,segs:[],total:5000,boom:true,speed:1,rec:null,chunks:[],recUrl:null};
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const easeIO=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+  function motDemoSource(){
+    const c=document.createElement("canvas");c.width=960;c.height=540;const g=c.getContext("2d");
+    const sky=g.createLinearGradient(0,0,0,540);
+    sky.addColorStop(0,"#141038");sky.addColorStop(.5,"#7c2f74");sky.addColorStop(.78,"#ff8a4c");sky.addColorStop(1,"#ffd9a0");
+    g.fillStyle=sky;g.fillRect(0,0,960,540);
+    g.fillStyle="#ffedb5";g.beginPath();g.arc(480,350,64,0,7);g.fill();
+    g.fillStyle="rgba(255,180,120,.35)";g.beginPath();g.arc(480,350,92,0,7);g.fill();
+    g.fillStyle="#2b1d55";g.beginPath();g.moveTo(0,430);g.lineTo(180,260);g.lineTo(340,430);g.closePath();g.fill();
+    g.fillStyle="#3b2570";g.beginPath();g.moveTo(260,430);g.lineTo(520,220);g.lineTo(780,430);g.closePath();g.fill();
+    g.fillStyle="#241647";g.beginPath();g.moveTo(600,430);g.lineTo(800,280);g.lineTo(1000,430);g.closePath();g.fill();
+    g.fillStyle="rgba(255,200,140,.5)";g.fillRect(420,430,120,110);
+    g.fillStyle="#fff";g.font="700 44px system-ui,sans-serif";g.textAlign="center";
+    g.fillText("AUDDY & TOM",480,120);
+    g.font="400 26px system-ui,sans-serif";g.fillStyle="#ffe9c9";
+    g.fillText("ภาพตัวอย่าง — อัปโหลดรูปของคุณได้เลย",480,162);
+    return c;
+  }
+  function motUseDemo(){
+    ML.src=motDemoSource();ML.sw=960;ML.sh=540;ML.kind="image";
+    try{MV.pause();MV.removeAttribute("src");MV.load();}catch(e){}
+    $("motFileStatus").textContent="🖼️ ใช้ภาพตัวอย่าง (960×540)";
+    motBuildFromInput();motPlay();
+  }
+  $("motDemoBtn").onclick=motUseDemo;
+  $("motFileInput").onchange=()=>{
+    const f=$("motFileInput").files[0];if(!f)return;
+    const url=URL.createObjectURL(f);
+    if(f.type.startsWith("video")){
+      ML.kind="video";MV.src=url;MV.play().catch(()=>{});
+      MV.onloadedmetadata=()=>{ML.sw=MV.videoWidth||960;ML.sh=MV.videoHeight||540;
+        $("motFileStatus").textContent=`🎬 ${f.name} (${ML.sw}×${ML.sh}) — มีเสียงต้นฉบับตอนส่งออก`;
+        ML.src=MV;motBuildFromInput();motPlay();};
+    }else{
+      const im=new Image();
+      im.onload=()=>{ML.src=im;ML.sw=im.naturalWidth;ML.sh=im.naturalHeight;ML.kind="image";
+        try{MV.pause();}catch(e){}
+        $("motFileStatus").textContent=`🖼️ ${f.name} (${ML.sw}×${ML.sh})`;
+        motBuildFromInput();motPlay();URL.revokeObjectURL(url);};
+      im.onerror=()=>{$("motFileStatus").textContent="❌ เปิดไฟล์รูปไม่ได้ ลองไฟล์ .jpg/.png";};
+      im.src=url;
+    }
+  };
+  $("motPresets").addEventListener("click",(e)=>{
+    const b=e.target.closest(".preset");if(!b)return;
+    const map={"🎬":"ซูมเข้าช้าๆ วนไปกลับ","📱":"แพนขวาเร็ว ครั้งเดียว","🎉":"เด้งสนุกมาก + ซูมเข้า วนไปกลับ","📸":"สั่นกล้องแรง ครั้งเดียว","🔄":"หมุนครบรอบ ครั้งเดียว"};
+    $("motCmdInput").value=map[b.textContent.trim()[0]]||b.textContent;
+    motBuildFromInput();motPlay();
+  });
+  // แปลงคำสั่งไทยเป็น moves (เรียงตามตำแหน่งที่พิมพ์)
+  function motParseMoves(cmd){
+    const t=" "+(cmd||"").toLowerCase()+" ";
+    const big=/(มาก|เยอะ|แรง|สุด)/.test(t), small=/(นิด|เบา|หน่อย|เล็กน้อย)/.test(t);
+    const fast=/(เร็ว|ไว|fast|quick)/.test(t), slow=/(ช้า|slow)/.test(t);
+    const cands=[];
+    const add=(re,label,mk)=>{const m=t.match(re);if(m)cands.push({i:m.index,label,mk});};
+    add(/(ซูมเข้า|zoom\s*in|ขยายเข้า)/,"ซูมเข้า",{k:"zoom",d:1});
+    add(/(ซูมออก|zoom\s*out|ย่อออก|ซูมถอย)/,"ซูมออก",{k:"zoom",d:-1});
+    add(/(แพนขวา|เลื่อนขวา|ไปขวา|pan\s*right)/,"แพนขวา",{k:"pan",dx:1,dy:0});
+    add(/(แพนซ้าย|เลื่อนซ้าย|ไปซ้าย|pan\s*left)/,"แพนซ้าย",{k:"pan",dx:-1,dy:0});
+    add(/(แพนขึ้น|เลื่อนขึ้น|ขึ้นบน|pan\s*up|เงย)/,"แพนขึ้น",{k:"pan",dx:0,dy:-1});
+    add(/(แพนลง|เลื่อนลง|ลงล่าง|pan\s*down|ก้ม)/,"แพนลง",{k:"pan",dx:0,dy:1});
+    add(/(หมุนครบ|ครบรอบ|หมุนรอบ|360|หนึ่งรอบ)/,"หมุนครบรอบ",{k:"spin"});
+    add(/(หมุน|rotate|เอียง)/,"หมุน",{k:"rotate"});
+    add(/(สั่น|เขย่า|shake)/,"สั่นกล้อง",{k:"shake"});
+    add(/(เด้ง|กระดอน|bounce)/,"เด้ง",{k:"bounce"});
+    add(/(ค่อย.?จาง|จางหาย|fade)/,"ค่อยๆ จาง",{k:"fade"});
+    cands.sort((a,b)=>a.i-b.i);
+    const moves=cands.map(c=>{
+      const m={...c.mk};
+      if(m.k==="zoom")m.f=big?1.7:small?1.15:1.38;
+      if(m.k==="pan")m.px=big?140:small?30:72;
+      if(m.k==="rotate")m.deg=/(ทวน|ซ้าย)/.test(t)?-20:20;
+      if(m.k==="shake")m.amp=big?15:8;
+      if(m.k==="bounce")m.amp=big?52:28;
+      return m;
+    });
+    if(!moves.length)moves.push({k:"zoom",d:1,f:1.38});
+    return {moves,fast,slow,big};
+  }
+  function motMovesToSegs(moves,totalMs){
+    const per=totalMs/moves.length;
+    const segs=[];let cur={s:1,x:0,y:0,r:0,a:1};
+    for(const m of moves){
+      const from={...cur};const to={...cur};let ov=null;
+      if(m.k==="zoom"){to.s=m.d>0?Math.min(2.8,from.s*m.f):Math.max(.6,from.s/m.f);}
+      else if(m.k==="pan"){to.x=Math.max(-230,Math.min(230,from.x+m.dx*m.px));to.y=Math.max(-230,Math.min(230,from.y+m.dy*m.px));}
+      else if(m.k==="rotate"){to.r=from.r+m.deg;}
+      else if(m.k==="spin"){to.r=from.r+360;}
+      else if(m.k==="shake"){ov={shake:m.amp};}
+      else if(m.k==="bounce"){ov={bounce:m.amp};}
+      else if(m.k==="fade"){ov={fade:1};}
+      segs.push({dur:per,from,to,ov});cur=to;
+    }
+    return segs;
+  }
+  function motCaps(){
+    return $("motCapInput").value.split("\n").map(s=>s.trim()).filter(Boolean).map(s=>{
+      const m=s.match(/^(\d+(?:\.\d+)?)\s*[-–~]\s*(\d+(?:\.\d+)?)\s*(?:วิ|วินาที|s)?\s*(.*)$/);
+      if(m)return {a:parseFloat(m[1]),b:parseFloat(m[2]),text:m[3]};
+      return {a:0,b:999,text:s};
+    });
+  }
+  function motBuildFromInput(){
+    const cmd=$("motCmdInput").value;
+    const {moves,fast,slow}=motParseMoves(cmd);
+    let total=parseInt($("motDurSel").value,10)*1000;
+    const tm=cmd.match(/(\d+(?:\.\d+)?)\s*(วิ|วินาที|s\b)/);
+    if(tm)total=Math.max(2000,Math.min(15000,parseFloat(tm[1])*1000));
+    else if(slow)total=Math.max(total,moves.length*2600);
+    else if(fast)total=Math.min(total,moves.length*1100);
+    ML.total=total;ML.segs=motMovesToSegs(moves,total);
+    ML.speed=parseFloat($("motSpeedSel").value)||1;
+    ML.boom=$("motBoomChk").checked;
+    if(!ML.boom)ML.loop=$("motLoopChk").checked;else ML.loop=true;
+    const names={zoom:m=>m.d>0?"ซูมเข้า":"ซูมออก",pan:m=>"แพน"+(m.dx>0?"ขวา":m.dx<0?"ซ้าย":m.dy>0?"ลง":"ขึ้น"),rotate:()=>"หมุน",spin:()=>"หมุนครบรอบ",shake:()=>"สั่นกล้อง",bounce:()=>"เด้ง",fade:()=>"ค่อยๆ จาง"};
+    $("motTimeline").textContent="🎬 "+moves.map(m=>names[m.k](m)).join(" → ")+`\n⏱ ${(total/1000)}วิ • ${$("motBoomChk").checked?"ไป-กลับ":"เล่นทางเดียว"} • ${$("motLoopChk").checked?"วนซ้ำ":"รอบเดียว"} • ความเร็ว ${ML.speed}x`+(ML.src?"":"\n⚠️ ยังไม่มีรูป/วิดีโอ — กด “ใช้ภาพตัวอย่าง” ก่อน");
+  }
+  function motBuildFromSpec(spec){
+    const mp={zoom:"zoom",pan:"pan",rotate:"rotate",spin:"spin",shake:"shake",bounce:"bounce",fade:"fade"};
+    const moves=(spec.moves||[]).slice(0,4).map(m=>{
+      const k=mp[m.type]||"zoom";const amt=m.amount===3?3:m.amount===1?1:2;
+      if(k==="zoom")return {k,d:m.dir==="out"?-1:1,f:amt===3?1.7:amt===1?1.15:1.38};
+      if(k==="pan"){const d=(m.dir||"right").toLowerCase();return {k,dx:d==="left"?-1:d==="right"?1:0,dy:d==="down"?1:d==="up"?-1:0,px:amt===3?140:amt===1?30:72};}
+      if(k==="rotate")return {k,deg:(m.dir==="ccw"?-1:1)*(amt===3?45:20)};
+      if(k==="shake")return {k,amp:amt===3?15:8};
+      if(k==="bounce")return {k,amp:amt===3?52:28};
+      if(k==="fade")return {k};
+      return {k:"spin"};
+    });
+    if(!moves.length)moves.push({k:"zoom",d:1,f:1.38});
+    ML.total=Math.max(2000,Math.min(12000,(spec.duration||5)*1000));
+    ML.segs=motMovesToSegs(moves,ML.total);
+    ML.boom=spec.boomerang!==false;ML.loop=true;
+    $("motBoomChk").checked=ML.boom;$("motLoopChk").checked=true;
+    $("motTimeline").textContent="🤖 AI ออกแบบ: "+moves.map(m=>m.k).join(" → ")+`\n⏱ ${(ML.total/1000)}วิ • ไป-กลับ • วนซ้ำ`;
+  }
+  function motPaintAt(el){
+    const W=960,H=540;
+    MX.fillStyle="#000";MX.fillRect(0,0,W,H);
+    if(!ML.src){MX.fillStyle="#888";MX.font="24px system-ui";MX.textAlign="center";MX.fillText("อัปโหลดรูป/วิดีโอ หรือกด “ใช้ภาพตัวอย่าง”",W/2,H/2);return;}
+    let acc=0,seg=ML.segs[ML.segs.length-1],p=1;
+    for(const s of ML.segs){if(el<=acc+s.dur||s===ML.segs[ML.segs.length-1]){seg=s;p=Math.min(1,Math.max(0,(el-acc)/s.dur));break;}acc+=s.dur;}
+    const e=easeIO(p);
+    const cur={s:lerp(seg.from.s,seg.to.s,e),x:lerp(seg.from.x,seg.to.x,e),y:lerp(seg.from.y,seg.to.y,e),r:lerp(seg.from.r,seg.to.r,e),a:lerp(seg.from.a,seg.to.a,e)};
+    if(seg.ov){const o=seg.ov;
+      if(o.shake){cur.x+=o.shake*Math.sin(el/90);cur.y+=o.shake*.7*Math.cos(el/70);}
+      if(o.bounce){cur.y-=Math.abs(Math.sin(el/230))*o.bounce;}
+      if(o.fade){cur.a=1-.85*Math.abs(Math.sin(Math.PI*e));}
+    }
+    MX.save();MX.globalAlpha=Math.max(0,Math.min(1,cur.a));
+    MX.translate(W/2+cur.x,H/2+cur.y);MX.rotate(cur.r*Math.PI/180);MX.scale(cur.s,cur.s);
+    const sr=ML.sw/ML.sh,dr=W/H;let cw,ch;
+    if(sr>dr){ch=ML.sh;cw=ML.sh*dr;}else{cw=ML.sw;ch=ML.sw/dr;}
+    const sx=(ML.sw-cw)/2,sy=(ML.sh-ch)/2;
+    try{MX.drawImage(ML.src,sx,sy,cw,ch,-W/2,-H/2,W,H);}catch(err){}
+    MX.restore();
+    // คำพูด/ซับไตเติล
+    const sec=el/1000;
+    const caps=motCaps().filter(c=>sec>=c.a&&sec<=c.b);
+    caps.forEach((c,i)=>{
+      const fs=c.text.length>40?30:40;
+      MX.font=`700 ${fs}px system-ui,"Noto Sans Thai",sans-serif`;
+      MX.textAlign="center";MX.textBaseline="bottom";
+      const y=H-36-i*56;
+      const tw=MX.measureText(c.text).width;
+      MX.fillStyle="rgba(0,0,0,.62)";
+      const bw=Math.min(tw+44,W-60);
+      MX.beginPath();MX.roundRect((W-bw)/2,y-fs-14,bw,fs+24,14);MX.fill();
+      MX.fillStyle="#fff";MX.fillText(c.text,W/2,y);
+    });
+  }
+  function motTick(now){
+    if(!ML.playing)return;
+    let el=(now-ML.t0)*ML.speed;const T=ML.total;
+    if(ML.boom){const cyc=T*2,m=el%cyc;el=m>T?cyc-m:m;}
+    else if(ML.loop){el=((el%T)+T)%T;}
+    else if(el>=T){ML.playing=false;motPaintAt(T);$("motStatus").textContent="⏹ จบแล้ว";return;}
+    motPaintAt(el);
+    ML.raf=requestAnimationFrame(motTick);
+  }
+  function motPlay(){
+    if(!ML.src){$("motStatus").textContent="⚠️ ยังไม่มีรูป/วิดีโอ — กด “ใช้ภาพตัวอย่าง” ก่อน";return;}
+    if(!ML.segs.length)motBuildFromInput();
+    ML.playing=false;cancelAnimationFrame(ML.raf);
+    if(ML.kind==="video"){try{MV.currentTime=0;MV.play().catch(()=>{});}catch(e){}}
+    ML.t0=performance.now();ML.playing=true;
+    $("motStatus").textContent="▶️ กำลังเล่น...";
+    ML.raf=requestAnimationFrame(motTick);
+  }
+  function motStop(){ML.playing=false;cancelAnimationFrame(ML.raf);$("motStatus").textContent="⏸ หยุดแล้ว";}
+  $("motPlayBtn").onclick=()=>{motBuildFromInput();motPlay();};
+  $("motStopBtn").onclick=motStop;
+  $("motDurSel").onchange=motBuildFromInput;$("motSpeedSel").onchange=()=>{ML.speed=parseFloat($("motSpeedSel").value)||1;};
+  $("motAiBtn").onclick=async()=>{
+    const wish=$("motCmdInput").value.trim()||"ฟีลหนังอบอุ่น";
+    $("motStatus").textContent="🤖 AI กำลังออกแบบโมชั่น...";
+    try{
+      const plugs=await ensurePlugs(["generateText"],$("motStatus"),$("motTimeline"));
+      if(!plugs) return;
+      const r=await plugs.generateText({instruction:`You are a motion-graphics director. User wish (Thai allowed): "${wish}". Output ONLY compact JSON, no markdown, no explanation: {"moves":[{"type":"zoom|pan|rotate|spin|shake|bounce|fade","dir":"in|out|left|right|up|down|cw|ccw","amount":1|2|3}],"duration":4-8,"boomerang":true}. Max 4 moves.`});
+      const m=String((r&&r.text)||r).match(/\{[\s\S]*\}/);
+      if(!m)throw new Error("no-json");
+      motBuildFromSpec(JSON.parse(m[0]));
+      $("motStatus").textContent="🤖 AI ออกแบบให้แล้ว — กดเล่นได้เลย";
+      motPlay();
+    }catch(e){$("motStatus").textContent="⚠️ AI แปลงไม่สำเร็จ — ลองพิมพ์คำสั่งตรงๆ เช่น “ซูมเข้าช้าๆ แล้วแพนขวา”";motBuildFromInput();}
+  };
+  $("motExportBtn").onclick=()=>{
+    if(!ML.src){$("motStatus").textContent="⚠️ ยังไม่มีรูป/วิดีโอ — กด “ใช้ภาพตัวอย่าง” ก่อน";return;}
+    motBuildFromInput();
+    $("motDl").hidden=true;if(ML.recUrl)URL.revokeObjectURL(ML.recUrl);
+    motPlay();
+    let stream;
+    try{stream=MC.captureStream(30);}catch(e){$("motStatus").textContent="❌ เบราว์เซอร์นี้ส่งออกวิดีโอไม่ได้ (ต้องใช้ Chrome/Edge)";return;}
+    if(ML.kind==="video"){try{const vs=MV.captureStream?MV.captureStream():MV.mozCaptureStream();vs.getAudioTracks().forEach(t=>stream.addTrack(t));}catch(e){}}
+    const mime=["video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm"].find(m=>{try{return MediaRecorder.isTypeSupported(m);}catch(e){return false;}})||"";
+    ML.chunks=[];
+    try{ML.rec=new MediaRecorder(stream,mime?{mimeType:mime,videoBitsPerSecond:5000000}:undefined);}
+    catch(e){$("motStatus").textContent="❌ เริ่มอัดไม่ได้: "+e.message;return;}
+    ML.rec.ondataavailable=ev=>{if(ev.data&&ev.data.size)ML.chunks.push(ev.data);};
+    ML.rec.onstop=()=>{
+      const blob=new Blob(ML.chunks,{type:"video/webm"});
+      ML.recUrl=URL.createObjectURL(blob);
+      const dl=$("motDl");dl.href=ML.recUrl;dl.download="auddy-tom-motion.webm";dl.hidden=false;
+      $("motStatus").textContent=`✅ ส่งออกแล้ว (${(blob.size/1024).toFixed(0)} KB) — กดปุ่มดาวน์โหลดได้เลย`;
+    };
+    ML.rec.start(250);
+    $("motStatus").textContent="🔴 กำลังอัดวิดีโอ... (รอจนครบ 1 รอบ)";
+    setTimeout(()=>{try{if(ML.rec&&ML.rec.state!=="inactive")ML.rec.stop();}catch(e){}},ML.total/ML.speed+600);
+  };
+
   // ---- Gallery ----
-  function renderGallery(sort){
+  async function renderGallery(sort){
     const box=$("galleryBox"); box.innerHTML='<div class="muted" style="padding:18px">กำลังโหลดแกลเลอรี...</div>';
     try{
-      box.innerHTML=root.generateImage({gallery:true,sort:sort||"recent",adaptiveHeight:true});
-    }catch(e){box.innerHTML='<div class="muted" style="padding:18px">โหลดแกลเลอรีไม่ได้ตอนนี้ (ยังไม่มีภาพที่เซฟ หรือเครือข่ายขัดข้อง)</div>';}
+      const GImg=await waitPlug("generateImage",20000);
+      if(!GImg){ box.innerHTML='<div class="muted" style="padding:18px">❌ ปลั๊กอินรูปยังโหลดไม่เสร็จ — รอ 10 วินาทีแล้วกดปุ่มแกลเลอรีอีกครั้ง (ไม่ต้องรีเฟรช)</div>'; return; }
+      const html=await GImg({gallery:true,sort:sort||"recent",adaptiveHeight:true});
+      box.innerHTML=String(html||"");
+      // บางกรณี plugin คืน Promise ที่ stringify เป็น iframe — ถ้ายังว่างให้ลองอีกรอบ
+      if(!box.innerHTML.trim()){
+        box.innerHTML='<div class="muted" style="padding:18px">แกลเลอรีว่าง — กดหัวใจที่ภาพเพื่อเซฟเข้าแกลเลอรีก่อน</div>';
+      }
+    }catch(e){box.innerHTML='<div class="muted" style="padding:18px">โหลดแกลเลอรีไม่ได้ตอนนี้ (ยังไม่มีภาพที่เซฟ หรือเครือข่ายขัดข้อง) — '+((e&&e.message)?e.message:e)+'</div>';}
   }
   $("galRecent").onclick=()=>renderGallery("recent");
   $("galTop").onclick=()=>renderGallery("top");

@@ -90,7 +90,6 @@
     <div class="logo" data-go="home"><div class="logo-mark">A</div> AUDDY&TOM Studio <span class="pill-free">ฟรี 100%</span></div>
     <nav class="nav" id="navEl"></nav>
     <div class="top-cta">
-      <span id="plugPill" class="pill-free" style="background:#eee;color:#555" title="สถานะปลั๊กอิน AI">⏳ กำลังโหลด AI...</span>
       <button class="btn btn-ghost" data-go="pricing">ราคา</button>
       <button class="btn btn-dark" data-go="image">เริ่มสร้าง →</button>
     </div>
@@ -416,7 +415,6 @@
       <details><summary>ข้อมูลแบรนด์ของฉันไปไหน?</summary><div class="muted">อยู่ในเครื่องคุณเท่านั้น (IndexedDB ผ่าน kv-plugin) ไม่ส่งไปเซิร์ฟเวอร์อื่น ลบได้ด้วยปุ่ม “ล้างความจำ”</div></details>
       <details><summary>ภาพที่สร้างเอาไปใช้เชิงพาณิชย์ได้ไหม?</summary><div class="muted">โดยทั่วไปทำได้ แต่ควรตรวจเงื่อนไขโมเดล/แพลตฟอร์มอีกครั้งสำหรับงานสำคัญ และอย่าใช้ภาพที่มีโลโก้แบรนด์คนอื่นหรือใบหน้าบุคคลจริงโดยไม่ได้รับอนุญาต</div></details>
       <details><summary>กดสร้างแล้วหมุนนาน / ขึ้น error ทำไง?</summary><div class="muted">รอ 10–60 วินาทีแล้วลองใหม่ อย่ากดรัวๆ เพราะคิวต่อคนมีจำกัด ถ้ายังไม่ได้ให้ลดความยาว prompt หรือเปลี่ยนสัดส่วนภาพแล้วลองอีกครั้ง</div></details>
-      <details><summary>เอาเว็บไปไว้โฮสต์ตัวเองแล้ว AI ไม่มา?</summary><div class="muted">AI หลัก (generateText/generateImage) เป็นปลั๊กอินของ Perchance ใช้ได้เฉพาะตอนรันบน perchance.org เท่านั้น ถ้าก๊อปแค่ HTML ไปโฮสต์เองจะไม่มีให้ใช้ — วิธีที่ถูกคือ (1) ใช้ลิงก์หน้าเว็บที่เซฟแล้วบน perchance.org ตรงๆ หรือ (2) ฝังด้วย iframe: &lt;iframe src="https://null.perchance.org/ชื่อเว็บคุณ" style="width:100%;height:900px;border:0"&gt;&lt;/iframe&gt; (เปลี่ยนชื่อเว็บคุณ) • ถ้ารันนอก Perchance เว็บนี้จะสลับไปใช้ AI สำรอง (Pollinations ฟรี) ให้อัตโนมัติ คุณภาพอาจต่างจากตัวหลัก ดูป้ายมุมขวาบน: 🟢=ตัวหลักพร้อม 🌐=โหมดเว็บนอก</div></details>
     </div>
   </section>
 
@@ -435,169 +433,30 @@
 
 <script>
 (function(){
-  const $ = (id)=>document.getElementById(id);
-  // Plugin resolver แบบทนทาน: รอ import โหลดอัตโนมัติ ไม่ต้องรีเฟรช ไม่ใช้ alert
-  // หมายเหตุสำคัญ: generateText/generateImage/kv เป็นปลั๊กอินของ Perchance engine
-  // มีให้ใช้เฉพาะตอนรันบน perchance.org (พรีวิว + หน้าเว็บที่เซฟแล้ว + iframe ฝังจาก perchance)
-  // ถ้าก๊อปแค่ HTML ไปโฮสต์เอง root จะไม่มี → ต้องใช้โหมด fallback ด้านล่างแทน
-  function isPerchanceEnv(){
-    try{
-      if(typeof root!=="undefined"&&!!root) return true;
-      if(typeof window!=="undefined"&&window.generatorName) return true;
-      if(typeof location!=="undefined"&&/perchance\.org$/.test(location.hostname)) return true;
-    }catch(e){}
-    return false;
-  }
-  // Fallback ข้ามเว็บ: ใช้ Pollinations ฟรี ไม่ต้องมีคีย์ (คุณภาพ/เงื่อนไขตามผู้ให้บริการ)
-  async function pollinationsText(instruction, onChunk){
-    const url="https://text.pollinations.ai/"+encodeURIComponent(String(instruction).slice(0,4000));
-    const ctrl=new AbortController();
-    const to=setTimeout(()=>ctrl.abort(),90000);
-    try{
-      const res=await fetch(url,{signal:ctrl.signal,headers:{Accept:"text/plain"}});
-      clearTimeout(to);
-      if(!res.ok) throw new Error("HTTP "+res.status);
-      const txt=await res.text();
-      if(onChunk) try{ onChunk({fullTextSoFar:txt,textChunk:txt}); }catch(e){}
-      return {text:txt};
-    }catch(e){ clearTimeout(to); throw e; }
-  }
-  function pollinationsImageUrl(prompt, ratio){
-    const p=encodeURIComponent(String(prompt).slice(0,1500));
-    const wh=(ratio==="512x768")?"width=512&height=768":(ratio==="768x512")?"width=768&height=512":(ratio==="768x768")?"width=768&height=768":"width=768&height=768";
-    return `https://image.pollinations.ai/prompt/${p}?${wh}&nologo=true`;
-  }
+  // Perchance สโคป plugin: ใน inline classic script ให้อ้างชื่อตรงๆ (generateText/generateImage/kv)
+  // ส่วน `root` มีเฉพาะบางสโคป — resolver นี้ลองทุกทาง "ตอนกดปุ่ม" (lazy) เพราะ plugin โหลดช้ากว่าโค้ดหน้าเว็บ
   function plug(name){
-    try{ if(typeof root!=="undefined"&&root&&root[name]!==undefined&&root[name]!==null) return root[name]; }catch(e){}
-    try{ if(typeof globalThis!=="undefined"&&globalThis[name]!==undefined) return globalThis[name]; }catch(e){}
+    try{ if(typeof root!=="undefined"&&root&&root[name]!==undefined) return root[name]; }catch(e){}
+    try{ const v=eval(name); if(v!==undefined) return v; }catch(e){}
     try{ if(typeof window!=="undefined"&&window[name]!==undefined) return window[name]; }catch(e){}
-    try{ const v=eval(name); if(v!==undefined&&v!==null) return v; }catch(e){}
     return undefined;
   }
-  const PLUG_ERR="ปลั๊กอิน AI ยังโหลดไม่เสร็จ — ระบบกำลังรอให้อัตโนมัติ ไม่ต้องรีเฟรช";
-  // เก็บสถานะล่าสุดไว้ให้ปุ่ม "เช็คสถานะ" อ่านได้
-  const plugState={tries:0,lastDiag:"",ready:{generateText:false,generateImage:false,kv:false}};
-  function plugDiag(name){
-    const d={name,foundVia:null,rootType:"n/a",hasRoot:false,iframe:false,err:""};
-    try{ d.hasRoot=(typeof root!=="undefined"&&!!root); }catch(e){ d.err+="hasRoot:"+e.message+"; "; }
-    try{ d.rootType=(typeof root); }catch(e){ d.rootType="err"; }
-    try{ if(typeof root!=="undefined"&&root&&root[name]!==undefined&&root[name]!==null) d.foundVia="root"; }catch(e){ d.err+="root:"+e.message+"; "; }
-    if(!d.foundVia){
-      try{ if(typeof globalThis!=="undefined"&&globalThis[name]!==undefined&&globalThis[name]!==null) d.foundVia="globalThis"; }catch(e){}
-    }
-    if(!d.foundVia){
-      try{ if(typeof window!=="undefined"&&window[name]!==undefined&&window[name]!==null) d.foundVia="window"; }catch(e){}
-    }
-    try{ d.iframe=!!document.querySelector("#aiTextPluginEmbedIframe"); }catch(e){}
-    return d;
+  const PLUG_ERR="ปลั๊กอิน AI ยังโหลดไม่เสร็จ — รอ 5 วินาทีแล้วกดปุ่มเดิมอีกครั้ง (ไม่ต้องรีเฟรชก็ได้)";
+  function lazyPlug(name){
+    const fn=function(...a){ const f=plug(name); if(!f) throw new Error(PLUG_ERR); return f.apply(this,a); };
+    return new Proxy(fn,{ get:(t,k)=>{
+      if(k==="__isLazyPlug") return true;
+      const f=plug(name); if(!f) return undefined;
+      const v=f[k]; return (typeof v==="function")?v.bind(f):v;
+    }});
   }
-  function updatePlugPill(){
-    const pill=$("plugPill");
-    if(!pill) return;
-    if(!isPerchanceEnv()){
-      pill.textContent="🌐 โหมดเว็บนอก — ใช้ AI สำรอง";
-      pill.style.background="#334155"; pill.style.color="#fff";
-      pill.title="รันนอก perchance.org — ปลั๊กอิน Perchance ไม่มี ใช้ AI สำรองแทน (ดูวิธีฝังที่ถูกต้องใน FAQ)";
-      return;
-    }
-    const t=!!plug("generateText"), i=!!plug("generateImage"), k=!!plug("kv");
-    plugState.ready={generateText:t,generateImage:i,kv:k};
-    if(t&&i&&k){ pill.textContent="🟢 AI พร้อมแล้ว"; pill.style.background="#0f7b3d"; pill.style.color="#fff"; }
-    else if(t||i||k){ pill.textContent="🟡 AI กำลังโหลด..."; pill.style.background="#9a5b00"; pill.style.color="#fff"; }
-    else { pill.textContent="🔴 AI ยังไม่มา — แตะเพื่อเช็ค"; pill.style.background="#ac2c2c"; pill.style.color="#fff"; }
+  const GText=lazyPlug("generateText"), GImg=lazyPlug("generateImage"), KVB=lazyPlug("kv");
+  function needPlugins(){
+    if(plug("generateText")&&plug("generateImage")&&plug("kv")) return true;
+    alert(PLUG_ERR);
+    return false;
   }
-  // แตะที่ pill เพื่อดูรายละเอียดใน console + alert สั้นๆ
-  document.addEventListener("click",(e)=>{
-    const pill=e.target.closest&&e.target.closest("#plugPill");
-    if(!pill) return;
-    if(!isPerchanceEnv()){
-      alert("ตอนนี้รันนอก perchance.org (เช่น ก๊อป HTML ไปโฮสต์เอง)\nปลั๊กอิน generateText/generateImage ของ Perchance จะไม่มีให้ใช้\n\nวิธีที่ถูก:\n1) เปิดหน้าเว็บที่เซฟแล้วบน perchance.org แล้วใช้งานตรงนั้น หรือ\n2) ฝังด้วย iframe: <iframe src=\"https://null.perchance.org/ชื่อเว็บคุณ\"> (เปลี่ยนชื่อเว็บคุณ)\n\nตอนนี้เว็บจะใช้ AI สำรอง (Pollinations) ให้อัตโนมัติแทน");
-      return;
-    }
-    const ds=["generateText","generateImage","kv"].map(plugDiag);
-    const txt=ds.map(d=>`${d.name}: ${d.foundVia?("เจอผ่าน "+d.foundVia):"ยังไม่เจอ"} (root:${d.rootType}, iframe:${d.iframe})`).join("\n");
-    console.warn("[plugDiag]",ds);
-    alert("สถานะปลั๊กอิน:\n"+txt+"\n\nถ้ายังไม่เจอ: ปิด adblock / เปลี่ยนเป็น Chrome / ลองเน็ตมือถือ แล้วรอ 20 วินาทีแล้วกดปุ่มเดิมอีกครั้ง");
-  });
-  function waitPlug(name, timeoutMs){
-    timeoutMs = timeoutMs || 45000;
-    const start = Date.now();
-    return new Promise((resolve)=>{
-      function tick(){
-        let f=null;
-        try{ f=plug(name); }catch(e){ f=null; }
-        plugState.tries++;
-        if(f){ updatePlugPill(); resolve(f); return; }
-        if(Date.now()-start>=timeoutMs){ resolve(null); return; }
-        // อัปเดต pill ทุก ~1 วินาทีระหว่างรอ
-        if(plugState.tries%4===0) updatePlugPill();
-        setTimeout(tick,300);
-      }
-      tick();
-    });
-  }
-  // รอเฉพาะปลั๊กอินที่เครื่องมือนั้นต้องใช้จริง (video ใช้แค่ generateText เป็นต้น)
-  // คืน object {generateText, generateImage, kv} เท่าที่ขอ หรือ null ถ้าหมดเวลา
-  async function ensurePlugs(names, statusEl, outEl){
-    const got={};
-    for(const n of names){
-      const already=plug(n);
-      if(already){ got[n]=already; continue; }
-      // นอก Perchance รอไปก็ไม่มี — ข้ามไป fallback ทันที ไม่ต้องรอ 45 วิ
-      if(!isPerchanceEnv()){
-        return null;
-      }
-      const t0=Date.now();
-      if(statusEl) statusEl.textContent="⏳ กำลังรอปลั๊กอิน "+n+" โหลด... (ครั้งแรกอาจใช้เวลา 5–30 วินาที ไม่ต้องรีเฟรช)";
-      // ระหว่างรอ อัปเดตวินาทีให้ผู้ใช้เห็นว่าไม่ได้ค้าง
-      const timer=setInterval(()=>{
-        const s=Math.round((Date.now()-t0)/1000);
-        if(statusEl) statusEl.textContent=`⏳ กำลังรอปลั๊กอิน ${n} โหลด... ${s} วินาทีแล้ว (ไม่ต้องรีเฟรช — รอได้ถึง 45 วินาที)`;
-      },1000);
-      const f=await waitPlug(n,45000);
-      clearInterval(timer);
-      if(!f){
-        const d=plugDiag(n);
-        plugState.lastDiag=JSON.stringify(d);
-        console.warn("[ensurePlugs failed]",d);
-        updatePlugPill();
-        const msg=`❌ โหลดปลั๊กอิน ${n} ไม่สำเร็จ — ตรวจเน็ตแล้วรอ 10 วินาที แล้วกดปุ่มเดิมอีกครั้งได้เลย (ไม่ต้องรีเฟรชทั้งหน้า)\n\n🔍 เช็คเบื้องต้น: root=${d.rootType} hasRoot=${d.hasRoot} iframe=${d.iframe} ${d.err?("err="+d.err):""}\n• ปิด adblock / Brave shield สำหรับเว็บนี้ แล้วลองใหม่\n• เปลี่ยนเป็น Chrome/Edge ล่าสุด\n• ถ้าใช้เน็ตบริษัท/โรงเรียน อาจบล็อก text-generation.perchance.org ลองเน็ตมือถือ\n• แตะป้าย 🔴/🟡 มุมขวาบนเพื่อดูสถานะทั้ง 3 ตัว`;
-        if(outEl) outEl.textContent=msg;
-        if(statusEl) statusEl.textContent="❌ "+n+" ยังไม่มา — อ่านรายละเอียดในกล่องผลลัพธ์";
-        return null;
-      }
-      got[n]=f;
-    }
-    updatePlugPill();
-    return got;
-  }
-  // อุ่นปลั๊กอินเบื้องหลังตั้งแต่เปิดเว็บ + อัปเดต pill เป็นระยะ
-  (function warmPlugs(){
-    updatePlugPill();
-    // เรียก preload ของ ai-text-plugin ถ้ามี (ทำให้ iframe พร้อมเร็วขึ้น)
-    const tryPreload=()=>{
-      try{
-        const g=plug("generateText");
-        if(g){ try{ g({preload:true}); }catch(e){} updatePlugPill(); return true; }
-      }catch(e){}
-      return false;
-    };
-    let n=0;
-    const iv=setInterval(()=>{
-      updatePlugPill();
-      if(tryPreload()){ clearInterval(iv); return; }
-      if(++n>40){ clearInterval(iv); return; }
-    },1000);
-    setTimeout(()=>{ try{ refreshBrandUI(false); }catch(e){} },3000);
-  })();
-  // ฟังก์ชันวินิจฉัยแบบเรียกจาก console ได้: window.__auddyDiag()
-  window.__auddyDiag=function(){
-    const ds=["generateText","generateImage","kv"].map(plugDiag);
-    let env="perchance";
-    try{ env=isPerchanceEnv()?"perchance":"external"; }catch(e){}
-    return {env, pill:($("plugPill")&&$("plugPill").textContent)||null, tries:plugState.tries, ready:plugState.ready, lastDiag:plugState.lastDiag, details:ds,
-      href:location.href, host:(location&&location.hostname)||"", ua:navigator.userAgent, online:navigator.onLine};
-  };
+  const $ = (id)=>document.getElementById(id);
   const PAGES = [
     ["home","🏠 หน้าแรก"],["image","🎨 สร้างภาพ"],["content","✍️ คอนเทนต์"],
     ["uiux","🧩 UI/UX"],["video","🎬 สตอรี่บอร์ด"],["3d","🧊 3D"],["motion","🎞️ โมชั่น"],
@@ -660,11 +519,7 @@
   // ---- Brand memory (kv) ----
   const BM_KEY="brand-memory-v1";
   async function getBrand(){
-    try{
-      const kv=plug("kv");
-      if(!kv||!kv.brand) return {};
-      return (await kv.brand.get(BM_KEY)) || {};
-    }catch(e){ return {}; }
+    try{ return (await KVB.brand.get(BM_KEY)) || {}; }catch(e){ return {}; }
   }
   function brandLine(b){
     const parts=[];
@@ -675,17 +530,8 @@
     if(b.avoid) parts.push(`ห้าม: ${b.avoid}`);
     return parts.length?(" (Brand: "+parts.join(" | ")+")"):"";
   }
-  async function refreshBrandUI(retry){
-    const kv0=plug("kv");
-    if(!kv0){
-      $("brandStatus").textContent="⏳ กำลังรอที่เก็บความจำโหลด...";
-      if(retry!==false){
-        const kv=await waitPlug("kv",20000);
-        if(!kv){ $("brandStatus").textContent="⚠️ โหลดที่เก็บความจำไม่ได้ตอนนี้ — ตั้งค่าได้ แต่บันทึกอาจยังไม่ได้"; return; }
-      } else return;
-    }
-    let b={};
-    try{ b=(await plug("kv").brand.get(BM_KEY))||{}; }catch(e){ b={}; }
+  async function refreshBrandUI(){
+    const b=await getBrand();
     if($("brandName")) $("brandName").value=b.name||"";
     if($("brandTone")) $("brandTone").value=b.tone||"";
     if($("brandColors")) $("brandColors").value=b.colors||"";
@@ -697,36 +543,26 @@
       : "ยังไม่มี Brand Memory — งาน AI จะใช้แค่บรีฟที่คุณพิมพ์";
   }
   $("brandSaveBtn").onclick=async()=>{
-    const kv=await waitPlug("kv",20000);
-    if(!kv){ $("brandStatus").textContent="❌ ที่เก็บความจำยังไม่พร้อม — รอ 10 วินาทีแล้วกดบันทึกอีกครั้ง"; return; }
     const b={name:$("brandName").value.trim(),tone:$("brandTone").value.trim(),colors:$("brandColors").value.trim(),style:$("brandStyle").value.trim(),avoid:$("brandAvoid").value.trim()};
-    try{ await kv.brand.set(BM_KEY,b); $("brandStatus").textContent="✅ บันทึกแล้ว"; }
-    catch(e){ $("brandStatus").textContent="❌ บันทึกไม่ได้: "+(e&&e.message?e.message:e); return; }
-    refreshBrandUI(false);
+    await KVB.brand.set(BM_KEY,b);
+    $("brandStatus").textContent="✅ บันทึกแล้ว"; refreshBrandUI();
   };
-  $("brandClearBtn").onclick=async()=>{
-    const kv=plug("kv");
-    if(!kv){ $("brandStatus").textContent="❌ ที่เก็บความจำยังไม่พร้อม"; return; }
-    try{ await kv.brand.delete(BM_KEY); }catch(e){}
-    refreshBrandUI(false);
-  };
+  $("brandClearBtn").onclick=async()=>{ await KVB.brand.delete(BM_KEY); refreshBrandUI(); };
   refreshBrandUI();
 
   // ---- IMAGE ----
   let lastImgUrl=null;
   function pushImgHistory(prompt,url){
-    const kv=plug("kv");
-    if(!kv) return;
-    kv.history.get("imgs").then(async (arr)=>{
+    KVB.history.get("imgs").then(async (arr)=>{
       arr=arr||[];
       arr.unshift({prompt,url,at:new Date().toISOString()});
       arr=arr.slice(0,12);
-      try{await kv.history.set("imgs",arr);}catch(e){}
+      try{await KVB.history.set("imgs",arr);}catch(e){}
       renderImgHistory(arr);
     }).catch(()=>{});
   }
   async function renderImgHistory(arr){
-    try{ const kv=plug("kv"); arr=arr||(kv?await kv.history.get("imgs"):[])||[]; }catch(e){arr=[];}
+    try{ arr=arr||await KVB.history.get("imgs")||[]; }catch(e){arr=[];}
     const box=$("imgHistory");
     if(!arr.length){box.innerHTML='<div class="muted">ยังไม่มีประวัติ — สร้างภาพแรกได้เลย</div>';return;}
     box.innerHTML="";
@@ -738,37 +574,21 @@
     });
   }
   renderImgHistory();
-  $("imgClearHist").onclick=async()=>{ const kv=plug("kv"); if(kv){try{await kv.history.delete("imgs");}catch(e){}} renderImgHistory([]); };
+  $("imgClearHist").onclick=async()=>{await KVB.history.delete("imgs");renderImgHistory();};
 
   $("imgGenBtn").onclick=async()=>{
+    if(!needPlugins())return;
     const btn=$("imgGenBtn"); btn.disabled=true;
     const box=$("imgResult"); lastImgUrl=null; $("imgDlBtn").disabled=true;
     box.innerHTML='<div><div class="spinner"></div><div class="loadline">กำลังวาดภาพ<span class="dots"></span> (10–40 วินาที)</div></div>';
-    $("imgStatus").textContent="⏳ กำลังเตรียมปลั๊กอิน...";
+    $("imgStatus").textContent="กำลังสร้าง...";
     try{
-      const plugs=await ensurePlugs(["generateImage"],$("imgStatus"),box);
       const b=await getBrand();
       const base=$("imgPromptInput").value.trim()||"beautiful cozy cafe";
       const styles=selectedStyles("styleChips");
       const full=`${base}, ${styles}${b.style?`, ${b.style}`:""}${b.colors?`, brand colors ${b.colors}`:""}`;
       const ratio=$("imgRatioSel").value||"768x768";
       const neg=$("imgNegInput").value.trim();
-      if(!plugs){
-        // โหมดเว็บนอก / ปลั๊กอินไม่มา — ใช้รูปสำรองฟรีทันที
-        $("imgStatus").textContent="🌐 ใช้รูปสำรอง (นอก Perchance)...";
-        const fbUrl=pollinationsImageUrl(full,ratio);
-        box.innerHTML="";
-        const fimg=document.createElement("img");
-        fimg.src=fbUrl; fimg.alt=full; fimg.style.width="100%"; fimg.style.height="auto";
-        box.appendChild(fimg);
-        lastImgUrl=fbUrl;
-        $("imgDlBtn").disabled=false;
-        $("imgStatus").textContent="✅ เสร็จแล้ว (รูปสำรอง — บน perchance.org จะได้ตัวหลักที่แรงกว่า)";
-        pushImgHistory(full, fbUrl);
-        btn.disabled=false; return;
-      }
-      const GImg=plugs.generateImage;
-      $("imgStatus").textContent="กำลังสร้าง...";
       const r=await GImg(full,{resolution:ratio,negativePrompt:neg||undefined});
       box.innerHTML="";
       const img=document.createElement("img");
@@ -784,23 +604,10 @@
       $("imgStatus").textContent="เกิดข้อผิดพลาด ลองใหม่อีกครั้ง";
     }finally{btn.disabled=false;}
   };
-   $("imgDlBtn").onclick=async()=>{
-     if(!lastImgUrl) return;
-    try{
-      if(lastImgUrl.startsWith("data:")){
-        const a=document.createElement("a"); a.href=lastImgUrl; a.download="auddy-tom-studio.png"; a.click(); return;
-      }
-      $("imgStatus").textContent="⏳ กำลังเตรียมไฟล์ดาวน์โหลด...";
-      const res=await fetch(lastImgUrl);
-      const blob=await res.blob();
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement("a"); a.href=url; a.download="auddy-tom-studio.png"; a.click();
-      setTimeout(()=>URL.revokeObjectURL(url),10000);
-      $("imgStatus").textContent="✅ เตรียมไฟล์แล้ว";
-    }catch(e){
-      window.open(lastImgUrl,"_blank");
-    }
-   };
+  $("imgDlBtn").onclick=()=>{
+    if(!lastImgUrl) return;
+    const a=document.createElement("a"); a.href=lastImgUrl; a.download="auddy-tom-studio.png"; a.click();
+  };
 
   // ---- TEXT (streaming, cancellable) ----
   let txtHandle=null;
@@ -812,45 +619,24 @@
     story:"เขียนเรื่องสั้นภาษาไทย 300-500 คำ เปิดเรื่องดึงดูด จบประทับใจ"
   };
   $("txtGenBtn").onclick=async()=>{
+    if(!needPlugins())return;
     if(txtHandle&&txtHandle.stop) try{txtHandle.stop();}catch(e){}
     const topic=$("txtTopicInput").value.trim()||"สินค้าใหม่";
     const type=$("txtTypeSel").value;
     const tone=singleSelected("toneChips")||"เป็นกันเอง";
+    const b=await getBrand();
+    const instruction=`งาน: ${TYPE_PROMPT[type]}\nหัวข้อ/บรีฟ: ${topic}\nโทนเสียง: ${tone}${b.tone?` (brand tone: ${b.tone})`:""}${b.name?`\nแบรนด์: ${b.name}`:""}${b.avoid?`\nข้อห้าม: ${b.avoid}`:""}\nภาษา: ภาษาไทยเป็นหลัก อ่านง่าย ขายได้จริง ห้ามมีลิงก์ปลอม ห้ามอ้าง URL ถ้าไม่จำเป็น`;
     const out=$("txtOut"); out.textContent="";
-    $("txtStatus").textContent="⏳ กำลังเตรียมปลั๊กอิน..."; $("txtStopBtn").disabled=false; $("txtGenBtn").disabled=true;
-    let b0={}; try{ b0=await getBrand(); }catch(e){}
-    const instruction0=`งาน: ${TYPE_PROMPT[type]}\nหัวข้อ/บรีฟ: ${topic}\nโทนเสียง: ${tone}${b0.tone?` (brand tone: ${b0.tone})`:""}${b0.name?`\nแบรนด์: ${b0.name}`:""}${b0.avoid?`\nข้อห้าม: ${b0.avoid}`:""}\nภาษา: ภาษาไทยเป็นหลัก อ่านง่าย ขายได้จริง ห้ามมีลิงก์ปลอม ห้ามอ้าง URL ถ้าไม่จำเป็น`;
+    $("txtStatus").textContent="กำลังเขียน..."; $("txtStopBtn").disabled=false; $("txtGenBtn").disabled=true;
     try{
-      const plugs=await ensurePlugs(["generateText"],$("txtStatus"),null);
-      if(!plugs){
-        $("txtStatus").textContent="🌐 ปลั๊กอินหลักไม่มา — กำลังลอง AI สำรอง...";
-        try{
-          const fb=await pollinationsText(instruction0,(d)=>{ out.textContent=d.fullTextSoFar||""; });
-          out.textContent=(fb&&fb.text)||"";
-          $("txtStatus").textContent="✅ เสร็จแล้ว (ผ่าน AI สำรอง)";
-        }catch(fe){
-          $("txtStatus").textContent="⚠️ AI ในเว็บยังไม่พร้อม — ใช้ prompt สำรองด้านล่างได้เลย";
-          out.textContent=`⚠️ AI ในเว็บยังไม่พร้อม (ปิด adblock / รอป้ายมุมขวาบนเป็น 🟢 แล้วกดอีกครั้ง)\n\n✅ ก๊อป prompt นี้ไปวางใน ChatGPT / Claude ได้ผลเหมือนกัน:\n\n──────── prompt สำรอง ────────\n${instruction0}\n──────── จบ ────────`;
-        }
-        $("txtStopBtn").disabled=true; $("txtGenBtn").disabled=false; return;
-      }
-      const GText=plugs.generateText;
-      const b=await getBrand();
-      const instruction=`งาน: ${TYPE_PROMPT[type]}\nหัวข้อ/บรีฟ: ${topic}\nโทนเสียง: ${tone}${b.tone?` (brand tone: ${b.tone})`:""}${b.name?`\nแบรนด์: ${b.name}`:""}${b.avoid?`\nข้อห้าม: ${b.avoid}`:""}\nภาษา: ภาษาไทยเป็นหลัก อ่านง่าย ขายได้จริง ห้ามมีลิงก์ปลอม ห้ามอ้าง URL ถ้าไม่จำเป็น`;
-      $("txtStatus").textContent="กำลังเขียน...";
-      const p=GText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar||d.textChunk||"";}});
+      const p=GText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar;}});
       txtHandle=p;
       const final=await p;
-      out.textContent=(final&&final.text)||String(final||"");
+      out.textContent=final.text||final;
       $("txtStatus").textContent="✅ เสร็จแล้ว";
-      try{
-        const kv=plug("kv");
-        if(kv){
-          const arr=(await kv.history.get("texts").catch(()=>null))||[];
-          arr.unshift({topic,type,text:String(final).slice(0,2000),at:new Date().toISOString()});
-          await kv.history.set("texts",arr.slice(0,10)).catch(()=>{});
-        }
-      }catch(e){}
+      const arr=(await KVB.history.get("texts").catch(()=>null))||[];
+      arr.unshift({topic,type,text:String(final).slice(0,2000),at:new Date().toISOString()});
+      await KVB.history.set("texts",arr.slice(0,10)).catch(()=>{});
     }catch(e){ out.textContent="❌ เขียนไม่สำเร็จ: "+(e&&e.message?e.message:e); $("txtStatus").textContent="ลองใหม่อีกครั้ง";
     }finally{$("txtStopBtn").disabled=true;$("txtGenBtn").disabled=false;txtHandle=null;}
   };
@@ -873,101 +659,68 @@
     });
   }
   $("uiGenBtn").onclick=async()=>{
+    if(!needPlugins())return;
     const idea=$("uiIdeaInput").value.trim()||"แอปใหม่";
+    const b=await getBrand();
+    paintPalette(paletteFor(idea+(b.colors||"")));
     const out=$("uiOut"); out.textContent=""; $("uiStatus").textContent="กำลังออกแบบ..."; $("uiGenBtn").disabled=true;
+    const instruction=`คุณคือนักออกแบบ UI/UX อาวุโส ตอบเป็นภาษาไทย โครงสร้าง:\n1) สรุปแนวคิด 1 ย่อหน้า\n2) ผู้ใช้ 3 กลุ่ม + งานหลักของแต่ละกลุ่ม\n3) โครงหน้า 5 จอ (ชื่อจอ / องค์ประกอบ / CTA)\n4) UX flow 6 ขั้น\n5) พาเลตต์สี 4 สี (hex) + ฟอนต์แนะนำ\n6) 3 หลัก UX ที่ต้องระวัง\n7) image prompt ภาษาอังกฤษ 1 ย่อหน้าสำหรับทำ moodboard\nไอเดีย: ${idea}${b.name?`\nแบรนด์: ${b.name}, โทน ${b.tone||"-"}, สี ${b.colors||"-"}, ห้าม ${b.avoid||"-"}`:""}\nห้ามใส่ลิงก์ปลอม`;
     try{
-      const plugs=await ensurePlugs(["generateText"],$("uiStatus"),out);
-      if(!plugs){ $("uiGenBtn").disabled=false; return; }
-      const b=await getBrand();
-      paintPalette(paletteFor(idea+(b.colors||"")));
-      const instruction=`คุณคือนักออกแบบ UI/UX อาวุโส ตอบเป็นภาษาไทย โครงสร้าง:\n1) สรุปแนวคิด 1 ย่อหน้า\n2) ผู้ใช้ 3 กลุ่ม + งานหลักของแต่ละกลุ่ม\n3) โครงหน้า 5 จอ (ชื่อจอ / องค์ประกอบ / CTA)\n4) UX flow 6 ขั้น\n5) พาเลตต์สี 4 สี (hex) + ฟอนต์แนะนำ\n6) 3 หลัก UX ที่ต้องระวัง\n7) image prompt ภาษาอังกฤษ 1 ย่อหน้าสำหรับทำ moodboard\nไอเดีย: ${idea}${b.name?`\nแบรนด์: ${b.name}, โทน ${b.tone||"-"}, สี ${b.colors||"-"}, ห้าม ${b.avoid||"-"}`:""}\nห้ามใส่ลิงก์ปลอม`;
-      const r=await plugs.generateText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar||d.textChunk||"";}});
-      out.textContent=(r&&r.text)||String(r||""); $("uiStatus").textContent="✅ เสร็จแล้ว";
+      const r=await GText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar;}});
+      out.textContent=r.text||r; $("uiStatus").textContent="✅ เสร็จแล้ว";
     }catch(e){out.textContent="❌ เกิดข้อผิดพลาด: "+(e&&e.message?e.message:e);}
     finally{$("uiGenBtn").disabled=false;}
   };
   $("uiCopyBtn").onclick=async()=>{try{await navigator.clipboard.writeText($("uiOut").textContent);$("uiStatus").textContent="📋 คัดลอกแล้ว";}catch(e){}};
   $("uiMoodBtn").onclick=async()=>{
+    if(!needPlugins())return;
     const idea=$("uiIdeaInput").value.trim();
     const box=$("uiImgResult"); box.hidden=false;
     box.innerHTML='<div><div class="spinner"></div><div class="loadline">กำลังวาดมู้ดบอร์ด<span class="dots"></span></div></div>';
     try{
-      const plugs=await ensurePlugs(["generateImage"],null,box);
-      if(!plugs){ box.innerHTML='<div class="muted" style="padding:16px">❌ ปลั๊กอินรูปยังโหลดไม่เสร็จ — รอ 10 วินาทีแล้วกดอีกครั้ง</div>'; return; }
       const b=await getBrand();
-      const r=await plugs.generateImage(`app UI moodboard collage, ${idea}, clean minimal, ${b.style||"modern soft"}, high quality`,{resolution:"768x512"});
+      const r=await GImg(`app UI moodboard collage, ${idea}, clean minimal, ${b.style||"modern soft"}, high quality`,{resolution:"768x512"});
       box.innerHTML=""; const im=document.createElement("img"); im.src=r.dataUrl; im.style.width="100%"; box.appendChild(im);
     }catch(e){box.innerHTML='<div class="muted" style="padding:16px">วาดมู้ดบอร์ดไม่สำเร็จ ลองใหม่อีกครั้ง</div>';}
   };
 
   // ---- VIDEO ----
   $("vidGenBtn").onclick=async()=>{
+    if(!needPlugins())return;
     const idea=$("vidIdeaInput").value.trim()||"โฆษณาสินค้า";
     const len=$("vidLenSel").value;
+    const b=await getBrand();
     const out=$("vidOut"); out.textContent=""; $("vidStatus").textContent="กำลังแตกช็อต..."; $("vidGenBtn").disabled=true;
-    // สร้าง instruction ไว้ก่อน — ถ้า AI ใช้ไม่ได้ จะได้ก๊อปไปวางที่ ChatGPT/Claude ได้ทันที
-    let b={};
-    try{ b=await getBrand(); }catch(e){ b={}; }
     const instruction=`คุณคือผู้กำกับโฆษณา เขียนสตอรี่บอร์ดภาษาไทย สำหรับวิดีโอ "${idea}" ความยาว ${len}\nโครง: ตารางช็อต (เวลา/ภาพ/มุมกล้อง/เสียง/บทพูด) 6-10 ช็อต, shot list ถ่ายจริง, prompt ภาษาอังกฤษ 3 อันสำหรับเครื่องมือ AI video (เช่น runway/pika), เพลง/ซาวด์แนะนำ\n${b.name?`แบรนด์ ${b.name} โทน ${b.tone||""}`:""}\nห้ามใส่ลิงก์จริง ให้บอกชื่อเครื่องมือเป็นข้อความเท่านั้น`;
     try{
-      const plugs=await ensurePlugs(["generateText"],$("vidStatus"),{set textContent(v){ out.textContent=v; }});
-      if(!plugs){
-        // ทางสำรอง: ลอง AI สำรอง (ใช้ได้นอก Perchance) ก่อน — ถ้าไม่ได้ค่อยให้ prompt ไปวางที่อื่น
-        $("vidStatus").textContent="🌐 ปลั๊กอินหลักไม่มา — กำลังลอง AI สำรอง...";
-        try{
-          const fb=await pollinationsText(instruction,(d)=>{ out.textContent=d.fullTextSoFar||""; });
-          out.textContent=(fb&&fb.text)||"";
-          $("vidStatus").textContent="✅ เสร็จแล้ว (ผ่าน AI สำรอง — ถ้าใช้บน perchance.org จะใช้ตัวหลักที่แรงกว่า)";
-          $("vidGenBtn").disabled=false; return;
-        }catch(fe){
-          console.warn("[video fallback failed]",fe);
-        }
-        $("vidStatus").textContent="⚠️ AI ในเว็บยังไม่พร้อม — ใช้ prompt สำรองด้านล่างได้เลย";
-        out.textContent=`⚠️ กดสร้างตอนนี้ AI ในเว็บยังไม่พร้อม (มักเกิดจาก adblock บล็อก text-generation.perchance.org หรือเน็ตบริษัท/โรงเรียนบล็อก)\n\n✅ ทางไปต่อ (เลือกข้อใดข้อหนึ่ง):\n1) ปิด adblock / Brave Shields สำหรับเว็บนี้ → รอป้ายมุมขวาบนเป็น 🟢 แล้วกดปุ่มเดิมอีกครั้ง\n2) เปลี่ยนเป็น Chrome/Edge ล่าสุด หรือลองเน็ตมือถือ\n3) ก๊อป prompt ด้านล่างไปวางใน ChatGPT / Claude / Gemini ได้ผลเหมือนกัน แล้วเอาผลกลับมาใช้:\n\n──────── prompt สำรอง ────────\n${instruction}\n──────── จบ prompt ────────\n\nกดปุ่ม "แตกสตอรี่บอร์ด" อีกครั้งเมื่อป้ายมุมขวาบนเป็น 🟢`;
-        $("vidGenBtn").disabled=false; return;
-      }
-      const r=await plugs.generateText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar||d.textChunk||"";}});
-      out.textContent=(r&&r.text)||String(r||""); $("vidStatus").textContent="✅ เสร็จแล้ว เอา prompt ไปวางในเครื่องมือวิดีโอได้เลย";
-    }catch(e){
-      console.warn(e);
-      const em=(e&&e.message?e.message:String(e));
-      // ถ้า iframe โดนบล็อก จะ error ตรงนี้แทน (plug เจอ แต่สตรีมไม่ได้) — ลอง fallback ให้อัตโนมัติ
-      try{
-        $("vidStatus").textContent="🌐 ตัวหลักสะดุด — กำลังลอง AI สำรอง...";
-        const fb=await pollinationsText(instruction,(d)=>{ out.textContent=d.fullTextSoFar||""; });
-        out.textContent=(fb&&fb.text)||"";
-        $("vidStatus").textContent="✅ เสร็จแล้ว (ผ่าน AI สำรอง)";
-      }catch(fe){
-        out.textContent=`❌ สร้างไม่สำเร็จ: ${em}\n\nถ้าข้อความมีคำว่า iframe / stream / network / blocked แปลว่าเบราว์เซอร์บล็อกหน้าต่าง AI — ปิด adblock แล้วลองใหม่ หรือใช้ prompt สำรองด้านล่างกับ AI ตัวอื่นได้:\n\n──────── prompt สำรอง ────────\n${instruction}`;
-      }
-    }
+      const r=await GText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar;}});
+      out.textContent=r.text||r; $("vidStatus").textContent="✅ เสร็จแล้ว เอา prompt ไปวางในเครื่องมือวิดีโอได้เลย";
+    }catch(e){out.textContent="❌ "+(e&&e.message?e.message:e);}
     finally{$("vidGenBtn").disabled=false;}
   };
   $("vidCopyBtn").onclick=async()=>{try{await navigator.clipboard.writeText($("vidOut").textContent);$("vidStatus").textContent="📋 คัดลอกแล้ว";}catch(e){}};
 
   // ---- 3D ----
   $("tdPromptBtn").onclick=async()=>{
+    if(!needPlugins())return;
     const obj=$("tdObjInput").value.trim()||"cute robot";
     const st=singleSelected("tdStyleChips");
+    const b=await getBrand();
     $("tdStatus").textContent="กำลังเขียน prompt...";
     try{
-      const plugs=await ensurePlugs(["generateText"],$("tdStatus"),$("tdOut"));
-      if(!plugs) return;
-      const b=await getBrand();
-      const r=await plugs.generateText({instruction:`Write ONE excellent English text-to-3d / text-to-image 3D render prompt for: "${obj}". Style: ${st}. Include: subject detail, materials, lighting, camera angle, background, quality keywords (octane, 8k, subsurface scattering...), negative prompt line. Then Thai explanation 3 บรรทัดว่าทำไม prompt นี้ดี. Brand context: ${b.style||"-"}. No fake links.`});
-      $("tdOut").textContent=(r&&r.text)||String(r||""); $("tdStatus").textContent="✅ ได้ prompt แล้ว — กดสร้างภาพพรีวิวได้เลย";
+      const r=await GText({instruction:`Write ONE excellent English text-to-3d / text-to-image 3D render prompt for: "${obj}". Style: ${st}. Include: subject detail, materials, lighting, camera angle, background, quality keywords (octane, 8k, subsurface scattering...), negative prompt line. Then Thai explanation 3 บรรทัดว่าทำไม prompt นี้ดี. Brand context: ${b.style||"-"}. No fake links.`});
+      $("tdOut").textContent=r.text||r; $("tdStatus").textContent="✅ ได้ prompt แล้ว — กดสร้างภาพพรีวิวได้เลย";
     }catch(e){$("tdOut").textContent="❌ "+(e&&e.message?e.message:e);}
   };
   $("tdImgBtn").onclick=async()=>{
+    if(!needPlugins())return;
     const obj=$("tdObjInput").value.trim()||"cute robot";
     const st=singleSelected("tdStyleChips");
     const box=$("tdImgResult"); box.hidden=false;
     box.innerHTML='<div><div class="spinner"></div><div class="loadline">กำลังเรนเดอร์พรีวิว<span class="dots"></span></div></div>';
     $("tdStatus").textContent="กำลังสร้างภาพ...";
     try{
-      const plugs=await ensurePlugs(["generateImage"],$("tdStatus"),box);
-      if(!plugs) return;
-      const r=await plugs.generateImage(`${obj}, ${st}, centered, studio lighting, high detail, masterpiece`,{resolution:"768x768"});
+      const r=await GImg(`${obj}, ${st}, centered, studio lighting, high detail, masterpiece`,{resolution:"768x768"});
       box.innerHTML=""; const im=document.createElement("img"); im.src=r.dataUrl; im.style.width="100%"; box.appendChild(im);
       $("tdStatus").textContent="✅ เสร็จแล้ว";
     }catch(e){box.innerHTML='<div class="muted" style="padding:16px">สร้างไม่สำเร็จ ลองใหม่อีกครั้ง</div>';}
@@ -1176,13 +929,12 @@
   $("motStopBtn").onclick=motStop;
   $("motDurSel").onchange=motBuildFromInput;$("motSpeedSel").onchange=()=>{ML.speed=parseFloat($("motSpeedSel").value)||1;};
   $("motAiBtn").onclick=async()=>{
+    if(!needPlugins())return;
     const wish=$("motCmdInput").value.trim()||"ฟีลหนังอบอุ่น";
     $("motStatus").textContent="🤖 AI กำลังออกแบบโมชั่น...";
     try{
-      const plugs=await ensurePlugs(["generateText"],$("motStatus"),$("motTimeline"));
-      if(!plugs) return;
-      const r=await plugs.generateText({instruction:`You are a motion-graphics director. User wish (Thai allowed): "${wish}". Output ONLY compact JSON, no markdown, no explanation: {"moves":[{"type":"zoom|pan|rotate|spin|shake|bounce|fade","dir":"in|out|left|right|up|down|cw|ccw","amount":1|2|3}],"duration":4-8,"boomerang":true}. Max 4 moves.`});
-      const m=String((r&&r.text)||r).match(/\{[\s\S]*\}/);
+      const r=await GText({instruction:`You are a motion-graphics director. User wish (Thai allowed): "${wish}". Output ONLY compact JSON, no markdown, no explanation: {"moves":[{"type":"zoom|pan|rotate|spin|shake|bounce|fade","dir":"in|out|left|right|up|down|cw|ccw","amount":1|2|3}],"duration":4-8,"boomerang":true}. Max 4 moves.`});
+      const m=String(r.text||r).match(/\{[\s\S]*\}/);
       if(!m)throw new Error("no-json");
       motBuildFromSpec(JSON.parse(m[0]));
       $("motStatus").textContent="🤖 AI ออกแบบให้แล้ว — กดเล่นได้เลย";
@@ -1214,18 +966,11 @@
   };
 
   // ---- Gallery ----
-  async function renderGallery(sort){
+  function renderGallery(sort){
     const box=$("galleryBox"); box.innerHTML='<div class="muted" style="padding:18px">กำลังโหลดแกลเลอรี...</div>';
     try{
-      const GImg=await waitPlug("generateImage",20000);
-      if(!GImg){ box.innerHTML='<div class="muted" style="padding:18px">❌ ปลั๊กอินรูปยังโหลดไม่เสร็จ — รอ 10 วินาทีแล้วกดปุ่มแกลเลอรีอีกครั้ง (ไม่ต้องรีเฟรช)</div>'; return; }
-      const html=await GImg({gallery:true,sort:sort||"recent",adaptiveHeight:true});
-      box.innerHTML=String(html||"");
-      // บางกรณี plugin คืน Promise ที่ stringify เป็น iframe — ถ้ายังว่างให้ลองอีกรอบ
-      if(!box.innerHTML.trim()){
-        box.innerHTML='<div class="muted" style="padding:18px">แกลเลอรีว่าง — กดหัวใจที่ภาพเพื่อเซฟเข้าแกลเลอรีก่อน</div>';
-      }
-    }catch(e){box.innerHTML='<div class="muted" style="padding:18px">โหลดแกลเลอรีไม่ได้ตอนนี้ (ยังไม่มีภาพที่เซฟ หรือเครือข่ายขัดข้อง) — '+((e&&e.message)?e.message:e)+'</div>';}
+      box.innerHTML=GImg({gallery:true,sort:sort||"recent",adaptiveHeight:true});
+    }catch(e){box.innerHTML='<div class="muted" style="padding:18px">โหลดแกลเลอรีไม่ได้ตอนนี้ (ยังไม่มีภาพที่เซฟ หรือเครือข่ายขัดข้อง)</div>';}
   }
   $("galRecent").onclick=()=>renderGallery("recent");
   $("galTop").onclick=()=>renderGallery("top");

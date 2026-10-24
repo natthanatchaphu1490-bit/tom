@@ -545,6 +545,12 @@
     },1000);
     setTimeout(()=>{ try{ refreshBrandUI(false); }catch(e){} },3000);
   })();
+  // ฟังก์ชันวินิจฉัยแบบเรียกจาก console ได้: window.__auddyDiag()
+  window.__auddyDiag=function(){
+    const ds=["generateText","generateImage","kv"].map(plugDiag);
+    return {pill:($("plugPill")&&$("plugPill").textContent)||null, tries:plugState.tries, ready:plugState.ready, lastDiag:plugState.lastDiag, details:ds,
+      href:location.href, ua:navigator.userAgent, online:navigator.onLine};
+  };
   const PAGES = [
     ["home","🏠 หน้าแรก"],["image","🎨 สร้างภาพ"],["content","✍️ คอนเทนต์"],
     ["uiux","🧩 UI/UX"],["video","🎬 สตอรี่บอร์ด"],["3d","🧊 3D"],["motion","🎞️ โมชั่น"],

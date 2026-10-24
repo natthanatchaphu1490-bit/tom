@@ -745,9 +745,15 @@
     const tone=singleSelected("toneChips")||"เป็นกันเอง";
     const out=$("txtOut"); out.textContent="";
     $("txtStatus").textContent="⏳ กำลังเตรียมปลั๊กอิน..."; $("txtStopBtn").disabled=false; $("txtGenBtn").disabled=true;
+    let b0={}; try{ b0=await getBrand(); }catch(e){}
+    const instruction0=`งาน: ${TYPE_PROMPT[type]}\nหัวข้อ/บรีฟ: ${topic}\nโทนเสียง: ${tone}${b0.tone?` (brand tone: ${b0.tone})`:""}${b0.name?`\nแบรนด์: ${b0.name}`:""}${b0.avoid?`\nข้อห้าม: ${b0.avoid}`:""}\nภาษา: ภาษาไทยเป็นหลัก อ่านง่าย ขายได้จริง ห้ามมีลิงก์ปลอม ห้ามอ้าง URL ถ้าไม่จำเป็น`;
     try{
-      const plugs=await ensurePlugs(["generateText"],$("txtStatus"),out);
-      if(!plugs){ $("txtStopBtn").disabled=true; $("txtGenBtn").disabled=false; return; }
+      const plugs=await ensurePlugs(["generateText"],$("txtStatus"),null);
+      if(!plugs){
+        $("txtStatus").textContent="⚠️ AI ในเว็บยังไม่พร้อม — ใช้ prompt สำรองด้านล่างได้เลย";
+        out.textContent=`⚠️ AI ในเว็บยังไม่พร้อม (ปิด adblock / รอป้ายมุมขวาบนเป็น 🟢 แล้วกดอีกครั้ง)\n\n✅ ก๊อป prompt นี้ไปวางใน ChatGPT / Claude ได้ผลเหมือนกัน:\n\n──────── prompt สำรอง ────────\n${instruction0}\n──────── จบ ────────`;
+        $("txtStopBtn").disabled=true; $("txtGenBtn").disabled=false; return;
+      }
       const GText=plugs.generateText;
       const b=await getBrand();
       const instruction=`งาน: ${TYPE_PROMPT[type]}\nหัวข้อ/บรีฟ: ${topic}\nโทนเสียง: ${tone}${b.tone?` (brand tone: ${b.tone})`:""}${b.name?`\nแบรนด์: ${b.name}`:""}${b.avoid?`\nข้อห้าม: ${b.avoid}`:""}\nภาษา: ภาษาไทยเป็นหลัก อ่านง่าย ขายได้จริง ห้ามมีลิงก์ปลอม ห้ามอ้าง URL ถ้าไม่จำเป็น`;
@@ -819,17 +825,26 @@
     const idea=$("vidIdeaInput").value.trim()||"โฆษณาสินค้า";
     const len=$("vidLenSel").value;
     const out=$("vidOut"); out.textContent=""; $("vidStatus").textContent="กำลังแตกช็อต..."; $("vidGenBtn").disabled=true;
+    // สร้าง instruction ไว้ก่อน — ถ้า AI ใช้ไม่ได้ จะได้ก๊อปไปวางที่ ChatGPT/Claude ได้ทันที
+    let b={};
+    try{ b=await getBrand(); }catch(e){ b={}; }
+    const instruction=`คุณคือผู้กำกับโฆษณา เขียนสตอรี่บอร์ดภาษาไทย สำหรับวิดีโอ "${idea}" ความยาว ${len}\nโครง: ตารางช็อต (เวลา/ภาพ/มุมกล้อง/เสียง/บทพูด) 6-10 ช็อต, shot list ถ่ายจริง, prompt ภาษาอังกฤษ 3 อันสำหรับเครื่องมือ AI video (เช่น runway/pika), เพลง/ซาวด์แนะนำ\n${b.name?`แบรนด์ ${b.name} โทน ${b.tone||""}`:""}\nห้ามใส่ลิงก์จริง ให้บอกชื่อเครื่องมือเป็นข้อความเท่านั้น`;
     try{
-      const plugs=await ensurePlugs(["generateText"],$("vidStatus"),out);
-      if(!plugs){ $("vidGenBtn").disabled=false; return; }
-      const b=await getBrand();
-      const instruction=`คุณคือผู้กำกับโฆษณา เขียนสตอรี่บอร์ดภาษาไทย สำหรับวิดีโอ "${idea}" ความยาว ${len}\nโครง: ตารางช็อต (เวลา/ภาพ/มุมกล้อง/เสียง/บทพูด) 6-10 ช็อต, shot list ถ่ายจริง, prompt ภาษาอังกฤษ 3 อันสำหรับเครื่องมือ AI video (เช่น runway/pika), เพลง/ซาวด์แนะนำ\n${b.name?`แบรนด์ ${b.name} โทน ${b.tone||""}`:""}\nห้ามใส่ลิงก์จริง ให้บอกชื่อเครื่องมือเป็นข้อความเท่านั้น`;
+      const plugs=await ensurePlugs(["generateText"],$("vidStatus"),{set textContent(v){ out.textContent=v; }});
+      if(!plugs){
+        // ทางสำรอง: ไม่บล็อกผู้ใช้ — ให้ prompt สำเร็จรูปไปใช้กับ AI ตัวอื่นได้เลย + ปุ่มลองใหม่
+        $("vidStatus").textContent="⚠️ AI ในเว็บยังไม่พร้อม — ใช้ prompt สำรองด้านล่างได้เลย";
+        out.textContent=`⚠️ กดสร้างตอนนี้ AI ในเว็บยังไม่พร้อม (มักเกิดจาก adblock บล็อก text-generation.perchance.org หรือเน็ตบริษัท/โรงเรียนบล็อก)\n\n✅ ทางไปต่อ (เลือกข้อใดข้อหนึ่ง):\n1) ปิด adblock / Brave Shields สำหรับเว็บนี้ → รอป้ายมุมขวาบนเป็น 🟢 แล้วกดปุ่มเดิมอีกครั้ง\n2) เปลี่ยนเป็น Chrome/Edge ล่าสุด หรือลองเน็ตมือถือ\n3) ก๊อป prompt ด้านล่างไปวางใน ChatGPT / Claude / Gemini ได้ผลเหมือนกัน แล้วเอาผลกลับมาใช้:\n\n──────── prompt สำรอง ────────\n${instruction}\n──────── จบ prompt ────────\n\nกดปุ่ม "แตกสตอรี่บอร์ด" อีกครั้งเมื่อป้ายมุมขวาบนเป็น 🟢`;
+        $("vidGenBtn").disabled=false; return;
+      }
       const r=await plugs.generateText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar||d.textChunk||"";}});
       out.textContent=(r&&r.text)||String(r||""); $("vidStatus").textContent="✅ เสร็จแล้ว เอา prompt ไปวางในเครื่องมือวิดีโอได้เลย";
     }catch(e){
       console.warn(e);
-      out.textContent="❌ "+(e&&e.message?e.message:e)+" — รอ 10 วินาทีแล้วกดปุ่มเดิมอีกครั้งได้เลย";
-      $("vidStatus").textContent="เกิดข้อผิดพลาด ลองใหม่อีกครั้ง";
+      const em=(e&&e.message?e.message:String(e));
+      // ถ้า iframe โดนบล็อก จะ error ตรงนี้แทน (plug เจอ แต่สตรีมไม่ได้)
+      out.textContent=`❌ สร้างไม่สำเร็จ: ${em}\n\nถ้าข้อความมีคำว่า iframe / stream / network / blocked แปลว่าเบราว์เซอร์บล็อกหน้าต่าง AI — ปิด adblock แล้วลองใหม่ หรือใช้ prompt สำรองด้านล่างกับ AI ตัวอื่นได้:\n\n──────── prompt สำรอง ────────\n${instruction}`;
+      $("vidStatus").textContent="เกิดข้อผิดพลาด — อ่านทางแก้ในกล่องผลลัพธ์";
     }
     finally{$("vidGenBtn").disabled=false;}
   };

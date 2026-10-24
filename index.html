@@ -90,6 +90,7 @@
     <div class="logo" data-go="home"><div class="logo-mark">A</div> AUDDY&TOM Studio <span class="pill-free">ฟรี 100%</span></div>
     <nav class="nav" id="navEl"></nav>
     <div class="top-cta">
+      <span id="plugPill" class="pill-free" style="background:#eee;color:#555" title="สถานะปลั๊กอิน AI">⏳ กำลังโหลด AI...</span>
       <button class="btn btn-ghost" data-go="pricing">ราคา</button>
       <button class="btn btn-dark" data-go="image">เริ่มสร้าง →</button>
     </div>
@@ -433,6 +434,7 @@
 
 <script>
 (function(){
+  const $ = (id)=>document.getElementById(id);
   // Plugin resolver แบบทนทาน: รอ import โหลดอัตโนมัติ ไม่ต้องรีเฟรช ไม่ใช้ alert
   function plug(name){
     try{ if(typeof root!=="undefined"&&root&&root[name]!==undefined&&root[name]!==null) return root[name]; }catch(e){}
@@ -442,16 +444,53 @@
     return undefined;
   }
   const PLUG_ERR="ปลั๊กอิน AI ยังโหลดไม่เสร็จ — ระบบกำลังรอให้อัตโนมัติ ไม่ต้องรีเฟรช";
+  // เก็บสถานะล่าสุดไว้ให้ปุ่ม "เช็คสถานะ" อ่านได้
+  const plugState={tries:0,lastDiag:"",ready:{generateText:false,generateImage:false,kv:false}};
+  function plugDiag(name){
+    const d={name,foundVia:null,rootType:"n/a",hasRoot:false,iframe:false,err:""};
+    try{ d.hasRoot=(typeof root!=="undefined"&&!!root); }catch(e){ d.err+="hasRoot:"+e.message+"; "; }
+    try{ d.rootType=(typeof root); }catch(e){ d.rootType="err"; }
+    try{ if(typeof root!=="undefined"&&root&&root[name]!==undefined&&root[name]!==null) d.foundVia="root"; }catch(e){ d.err+="root:"+e.message+"; "; }
+    if(!d.foundVia){
+      try{ if(typeof globalThis!=="undefined"&&globalThis[name]!==undefined&&globalThis[name]!==null) d.foundVia="globalThis"; }catch(e){}
+    }
+    if(!d.foundVia){
+      try{ if(typeof window!=="undefined"&&window[name]!==undefined&&window[name]!==null) d.foundVia="window"; }catch(e){}
+    }
+    try{ d.iframe=!!document.querySelector("#aiTextPluginEmbedIframe"); }catch(e){}
+    return d;
+  }
+  function updatePlugPill(){
+    const pill=$("plugPill");
+    if(!pill) return;
+    const t=!!plug("generateText"), i=!!plug("generateImage"), k=!!plug("kv");
+    plugState.ready={generateText:t,generateImage:i,kv:k};
+    if(t&&i&&k){ pill.textContent="🟢 AI พร้อมแล้ว"; pill.style.background="#0f7b3d"; pill.style.color="#fff"; }
+    else if(t||i||k){ pill.textContent="🟡 AI กำลังโหลด..."; pill.style.background="#9a5b00"; pill.style.color="#fff"; }
+    else { pill.textContent="🔴 AI ยังไม่มา — แตะเพื่อเช็ค"; pill.style.background="#ac2c2c"; pill.style.color="#fff"; }
+  }
+  // แตะที่ pill เพื่อดูรายละเอียดใน console + alert สั้นๆ
+  document.addEventListener("click",(e)=>{
+    const pill=e.target.closest&&e.target.closest("#plugPill");
+    if(!pill) return;
+    const ds=["generateText","generateImage","kv"].map(plugDiag);
+    const txt=ds.map(d=>`${d.name}: ${d.foundVia?("เจอผ่าน "+d.foundVia):"ยังไม่เจอ"} (root:${d.rootType}, iframe:${d.iframe})`).join("\n");
+    console.warn("[plugDiag]",ds);
+    alert("สถานะปลั๊กอิน:\n"+txt+"\n\nถ้ายังไม่เจอ: ปิด adblock / เปลี่ยนเป็น Chrome / ลองเน็ตมือถือ แล้วรอ 20 วินาทีแล้วกดปุ่มเดิมอีกครั้ง");
+  });
   function waitPlug(name, timeoutMs){
-    timeoutMs = timeoutMs || 25000;
+    timeoutMs = timeoutMs || 45000;
     const start = Date.now();
     return new Promise((resolve)=>{
       function tick(){
         let f=null;
         try{ f=plug(name); }catch(e){ f=null; }
-        if(f){ resolve(f); return; }
+        plugState.tries++;
+        if(f){ updatePlugPill(); resolve(f); return; }
         if(Date.now()-start>=timeoutMs){ resolve(null); return; }
-        setTimeout(tick,250);
+        // อัปเดต pill ทุก ~1 วินาทีระหว่างรอ
+        if(plugState.tries%4===0) updatePlugPill();
+        setTimeout(tick,300);
       }
       tick();
     });
@@ -461,20 +500,51 @@
   async function ensurePlugs(names, statusEl, outEl){
     const got={};
     for(const n of names){
-      if(plug(n)){ got[n]=plug(n); continue; }
-      if(statusEl) statusEl.textContent="⏳ กำลังรอปลั๊กอิน "+n+" โหลด... (ครั้งแรกอาจใช้เวลา 5–20 วินาที ไม่ต้องรีเฟรช)";
-      const f=await waitPlug(n,30000);
+      const already=plug(n);
+      if(already){ got[n]=already; continue; }
+      const t0=Date.now();
+      if(statusEl) statusEl.textContent="⏳ กำลังรอปลั๊กอิน "+n+" โหลด... (ครั้งแรกอาจใช้เวลา 5–30 วินาที ไม่ต้องรีเฟรช)";
+      // ระหว่างรอ อัปเดตวินาทีให้ผู้ใช้เห็นว่าไม่ได้ค้าง
+      const timer=setInterval(()=>{
+        const s=Math.round((Date.now()-t0)/1000);
+        if(statusEl) statusEl.textContent=`⏳ กำลังรอปลั๊กอิน ${n} โหลด... ${s} วินาทีแล้ว (ไม่ต้องรีเฟรช — รอได้ถึง 45 วินาที)`;
+      },1000);
+      const f=await waitPlug(n,45000);
+      clearInterval(timer);
       if(!f){
-        const msg="❌ โหลดปลั๊กอิน "+n+" ไม่สำเร็จ — ตรวจเน็ตแล้วรอ 10 วินาที แล้วกดปุ่มเดิมอีกครั้งได้เลย (ไม่ต้องรีเฟรชทั้งหน้า)";
+        const d=plugDiag(n);
+        plugState.lastDiag=JSON.stringify(d);
+        console.warn("[ensurePlugs failed]",d);
+        updatePlugPill();
+        const msg=`❌ โหลดปลั๊กอิน ${n} ไม่สำเร็จ — ตรวจเน็ตแล้วรอ 10 วินาที แล้วกดปุ่มเดิมอีกครั้งได้เลย (ไม่ต้องรีเฟรชทั้งหน้า)\n\n🔍 เช็คเบื้องต้น: root=${d.rootType} hasRoot=${d.hasRoot} iframe=${d.iframe} ${d.err?("err="+d.err):""}\n• ปิด adblock / Brave shield สำหรับเว็บนี้ แล้วลองใหม่\n• เปลี่ยนเป็น Chrome/Edge ล่าสุด\n• ถ้าใช้เน็ตบริษัท/โรงเรียน อาจบล็อก text-generation.perchance.org ลองเน็ตมือถือ\n• แตะป้าย 🔴/🟡 มุมขวาบนเพื่อดูสถานะทั้ง 3 ตัว`;
         if(outEl) outEl.textContent=msg;
-        if(statusEl) statusEl.textContent=msg;
+        if(statusEl) statusEl.textContent="❌ "+n+" ยังไม่มา — อ่านรายละเอียดในกล่องผลลัพธ์";
         return null;
       }
       got[n]=f;
     }
+    updatePlugPill();
     return got;
   }
-  const $ = (id)=>document.getElementById(id);
+  // อุ่นปลั๊กอินเบื้องหลังตั้งแต่เปิดเว็บ + อัปเดต pill เป็นระยะ
+  (function warmPlugs(){
+    updatePlugPill();
+    // เรียก preload ของ ai-text-plugin ถ้ามี (ทำให้ iframe พร้อมเร็วขึ้น)
+    const tryPreload=()=>{
+      try{
+        const g=plug("generateText");
+        if(g){ try{ g({preload:true}); }catch(e){} updatePlugPill(); return true; }
+      }catch(e){}
+      return false;
+    };
+    let n=0;
+    const iv=setInterval(()=>{
+      updatePlugPill();
+      if(tryPreload()){ clearInterval(iv); return; }
+      if(++n>40){ clearInterval(iv); return; }
+    },1000);
+    setTimeout(()=>{ try{ refreshBrandUI(false); }catch(e){} },3000);
+  })();
   const PAGES = [
     ["home","🏠 หน้าแรก"],["image","🎨 สร้างภาพ"],["content","✍️ คอนเทนต์"],
     ["uiux","🧩 UI/UX"],["video","🎬 สตอรี่บอร์ด"],["3d","🧊 3D"],["motion","🎞️ โมชั่น"],

@@ -127,6 +127,7 @@
         <button class="chip" data-quick="uiux">🧩 เป็นไอเดียแอป</button>
         <button class="chip" data-quick="video">🎬 เป็นสตอรี่บอร์ด</button>
         <button class="chip" data-quick="3d">🧊 เป็น 3D prompt</button>
+        <button class="chip" data-quick="motion">🎞️ เป็นภาพเคลื่อนไหว</button>
       </div>
       <div class="mini">ทิป: ตั้งค่า <b style="color:#fff">Brand Memory</b> ก่อน งานทุกชิ้นจะออนแบรนด์อัตโนมัติ — <a href="#" data-go="brand" style="color:#ffb78f">ไปตั้งค่า →</a></div>
     </div>
@@ -379,25 +380,32 @@
 <script>
 (function(){
   // Perchance สโคป plugin: ใน inline classic script ให้อ้างชื่อตรงๆ (generateText/generateImage/kv)
-  // ส่วน `root` มีเฉพาะบางสโคป — resolver นี้ลองทุบทางแล้วใช้อันที่เจอ
+  // ส่วน `root` มีเฉพาะบางสโคป — resolver นี้ลองทุกทาง "ตอนกดปุ่ม" (lazy) เพราะ plugin โหลดช้ากว่าโค้ดหน้าเว็บ
   function plug(name){
     try{ if(typeof root!=="undefined"&&root&&root[name]!==undefined) return root[name]; }catch(e){}
     try{ const v=eval(name); if(v!==undefined) return v; }catch(e){}
     try{ if(typeof window!=="undefined"&&window[name]!==undefined) return window[name]; }catch(e){}
     return undefined;
   }
-  const GText=plug("generateText"), GImg=plug("generateImage"), KVB=plug("kv");
+  const PLUG_ERR="ปลั๊กอิน AI ยังโหลดไม่เสร็จ — รอ 5 วินาทีแล้วกดปุ่มเดิมอีกครั้ง (ไม่ต้องรีเฟรชก็ได้)";
+  function lazyPlug(name){
+    const fn=function(...a){ const f=plug(name); if(!f) throw new Error(PLUG_ERR); return f.apply(this,a); };
+    return new Proxy(fn,{ get:(t,k)=>{
+      if(k==="__isLazyPlug") return true;
+      const f=plug(name); if(!f) return undefined;
+      const v=f[k]; return (typeof v==="function")?v.bind(f):v;
+    }});
+  }
+  const GText=lazyPlug("generateText"), GImg=lazyPlug("generateImage"), KVB=lazyPlug("kv");
   function needPlugins(){
-    if(!GText||!GImg||!KVB){
-      alert("ปลั๊กอิน AI ยังโหลดไม่เสร็จ — กดรีเฟรชหน้าเว็บ 1 ครั้งแล้วลองใหม่");
-      return false;
-    }
-    return true;
+    if(plug("generateText")&&plug("generateImage")&&plug("kv")) return true;
+    alert(PLUG_ERR);
+    return false;
   }
   const $ = (id)=>document.getElementById(id);
   const PAGES = [
     ["home","🏠 หน้าแรก"],["image","🎨 สร้างภาพ"],["content","✍️ คอนเทนต์"],
-    ["uiux","🧩 UI/UX"],["video","🎬 สตอรี่บอร์ด"],["3d","🧊 3D"],
+    ["uiux","🧩 UI/UX"],["video","🎬 สตอรี่บอร์ด"],["3d","🧊 3D"],["motion","🎞️ โมชั่น"],
     ["brand","🧠 แบรนด์"],["gallery","🖼️ แกลเลอรี"],["pricing","💚 ราคา"],["faq","❓ FAQ"]
   ];
   const navEl = $("navEl"), mnavEl = $("mnavEl");
@@ -432,6 +440,7 @@
       else if(q==="uiux"){$("uiIdeaInput").value=v; go("uiux");}
       else if(q==="video"){$("vidIdeaInput").value=v; go("video");}
       else if(q==="3d"){$("tdObjInput").value=v; go("3d");}
+      else if(q==="motion"){$("motCmdInput").value="ซูมเข้าช้าๆ "+v+" วนไปกลับ"; go("motion");}
     }
   });
 

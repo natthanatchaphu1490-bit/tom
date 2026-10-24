@@ -63,7 +63,6 @@
   .out{margin-top:14px;background:#111;color:#f5f1ea;border-radius:14px;padding:14px;min-height:80px;line-height:1.7;font-size:14px;white-space:pre-wrap}
   .out.light{background:#f7f3ec;color:var(--ink);border:1px solid var(--line)}
   .img-result{margin-top:12px;display:grid;place-items:center;background:#0f0d0a;border-radius:14px;min-height:280px;overflow:hidden;position:relative}
-  .img-result[hidden]{display:none}
   .img-result img{max-width:100%;display:block}
   .spinner{width:34px;height:34px;border-radius:50%;border:3px solid #444;border-top-color:var(--brand);animation:spin 1s linear infinite;margin:40px auto}
   @keyframes spin{to{transform:rotate(360deg)}}
@@ -84,6 +83,9 @@
   .history-item img{max-width:100%;border-radius:8px;margin-top:6px}
   details{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff;margin-top:10px}
   summary{cursor:pointer;font-weight:700}
+  .gal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .gal-grid img{width:100%;border-radius:10px;display:block}
+  @media(max-width:860px){.gal-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 
 <div class="topbar">
@@ -153,7 +155,7 @@
         <div>2️⃣ พิมพ์บรีฟสั้นๆ ที่หน้าเครื่องมือที่ต้องการ แล้วกดสร้าง</div>
         <div>3️⃣ เซฟ / ดาวน์โหลด / ดูประวัติย้อนหลังได้ ทุกอย่างอยู่ในเครื่องคุณ</div>
       </div>
-      <div class="muted">หมายเหตุซื่อสัตย์: เว็บนี้สร้างใหม่ทั้งหมดโดยได้แรงบันดาลใจจาก miora.design ไม่ได้คัดลอกโค้ดหรือรูปของ Miora มาใช้ โมเดลภาพ/ข้อความใช้ฟรีโควต้าของ Perchance • วิดีโอจริงยังเรนเดอร์ในเบราว์เซอร์ไม่ได้ จึงให้เป็นสตอรี่บอร์ด+prompt เอาไปทำต่อได้ทันที</div>
+      <div class="muted">หมายเหตุซื่อสัตย์: เว็บนี้สร้างใหม่ทั้งหมดโดยได้แรงบันดาลใจจาก miora.design ไม่ได้คัดลอกโค้ดหรือรูปของ Miora มาใช้ โมเดลภาพ/ข้อความใช้ API ฟรีของ Pollinations • วิดีโอจริงยังเรนเดอร์ในเบราว์เซอร์ไม่ได้ จึงให้เป็นสตอรี่บอร์ด+prompt เอาไปทำต่อได้ทันที</div>
     </div>
   </section>
 
@@ -194,7 +196,7 @@
         <span class="muted" id="imgStatus">พร้อมสร้าง • ฟรี ไม่ต้องล็อกอิน</span>
       </div>
       <div class="img-result" id="imgResult"><span class="muted">ภาพจะแสดงตรงนี้</span></div>
-      <div class="muted" style="margin-top:8px">กดรูปหัวใจบนภาพเพื่อเซฟลงแกลเลอรีสาธารณะของเว็บนี้ได้ • ประวัติภาพของคุณดูได้ที่เมนู “ประวัติของฉัน” ด้านล่าง</div>
+      <div class="muted" style="margin-top:8px">ภาพที่สร้างจะถูกเก็บลงประวัติและแกลเลอรีในเครื่องนี้อัตโนมัติ</div>
     </div>
     <div class="card" style="margin-top:14px">
       <b>🕘 ประวัติภาพของฉัน (เก็บในเครื่อง)</b>
@@ -306,7 +308,7 @@
   <section class="page" data-page="brand">
     <div class="card">
       <h2 style="margin:0">🧠 Brand Memory <span class="pill-free">จำในเครื่อง</span></h2>
-      <div class="muted">ตั้งครั้งเดียว ทุกเครื่องมือจะดึงไปใช้เอง (ชื่อแบรนด์ โทน สี สไตล์) • เก็บด้วย kv-plugin ในเครื่องคุณเท่านั้น ลบได้ตลอด</div>
+      <div class="muted">ตั้งครั้งเดียว ทุกเครื่องมือจะดึงไปใช้เอง (ชื่อแบรนด์ โทน สี สไตล์) • เก็บใน localStorage ของเบราวเซอร์คุณเท่านั้น ลบได้ตลอด</div>
       <div class="grid2">
         <div><label>ชื่อแบรนด์</label><input id="brandName" type="text" placeholder="เช่น AUDDY&TOM Cat Cafe" /></div>
         <div><label>โทนเสียง</label><input id="brandTone" type="text" placeholder="เช่น อบอุ่น เป็นกันเอง ติดตลกนิดๆ" /></div>
@@ -329,11 +331,12 @@
   <!-- GALLERY -->
   <section class="page" data-page="gallery">
     <div class="card">
-      <h2 style="margin:0">🖼️ แกลเลอรีสาธารณะ</h2>
-      <div class="muted">ภาพที่ผู้ใช้เว็บนี้กดหัวใจเซฟไว้ จะมารวมกันตรงนี้ (ระบบแกลเลอรีของ Perchance) • ถ้าโหลดไม่ได้ = ยังไม่มีภาพที่เซฟ</div>
+      <h2 style="margin:0">🖼️ แกลเลอรีของฉัน</h2>
+      <div class="muted">ภาพที่คุณสร้างในเว็บนี้ จะรวมอยู่ตรงนี้อัตโนมัติ • เก็บเฉพาะในเบราวเซอร์ของคุณ ไม่ส่งไปไหน</div>
       <div class="row" style="margin:12px 0">
-        <button class="btn btn-dark" id="galRecent">ล่าสุด</button>
-        <button class="btn btn-ghost" id="galTop">ยอดนิยม</button>
+        <button class="btn btn-dark" id="galRefresh">รีเฟรช</button>
+        <button class="btn btn-ghost" id="galClear">ล้างแกลเลอรี</button>
+        <span class="muted" id="galCount"></span>
       </div>
       <div id="galleryBox" style="min-height:300px;border:1px solid var(--line);border-radius:14px;overflow:hidden"></div>
     </div>
@@ -343,9 +346,9 @@
   <section class="page" data-page="pricing">
     <div class="card" style="text-align:center">
       <h2 style="margin:0">💚 ราคา: ฟรีตลอดไป</h2>
-      <p class="muted">ไม่มีแผน Pro ไม่มีล็อกฟีเจอร์ ทุกเมนูข้างบนใช้ได้หมด — ต้นทุนรันโดยโควต้าฟรีของ Perchance (AI ข้อความ/ภาพ) + ที่เก็บในเครื่องคุณ</p>
+      <p class="muted">ไม่มีแผน Pro ไม่มีล็อกฟีเจอร์ ทุกเมนูข้างบนใช้ได้หมด — ต้นทุนรันโดย API ฟรีของ Pollinations (AI ข้อความ/ภาพ จำกัดความถี่) + ที่เก็บในเครื่องคุณ</p>
       <div class="grid3" style="text-align:left;margin-top:12px">
-        <div class="card" style="box-shadow:none"><b>🆓 Free — ฿0</b><div class="klist"><div>✅ สร้างภาพไม่จำกัด (ตามคิวว่าง)</div><div>✅ เขียนคอนเทนต์ / UI / สตอรี่บอร์ด / 3D</div><div>✅ Brand Memory + ประวัติในเครื่อง</div><div>✅ แกลเลอรีสาธารณะ</div></div><button class="btn btn-brand" data-go="image" style="width:100%">เริ่มใช้เลย</button></div>
+        <div class="card" style="box-shadow:none"><b>🆓 Free — ฿0</b><div class="klist"><div>✅ สร้างภาพฟรี (ตามคิว API ฟรี)</div><div>✅ เขียนคอนเทนต์ / UI / สตอรี่บอร์ด / 3D</div><div>✅ Brand Memory + ประวัติในเครื่อง</div><div>✅ แกลเลอรีสาธารณะ</div></div><button class="btn btn-brand" data-go="image" style="width:100%">เริ่มใช้เลย</button></div>
         <div class="card" style="box-shadow:none"><b>📦 สิ่งที่เราไม่ทำ</b><div class="klist"><div>❌ ไม่บังคับสมัคร / ไม่เก็บอีเมล</div><div>❌ ไม่ล็อกความละเอียดภาพ</div><div>❌ ไม่ฝังลายน้ำในภาพที่โหลด</div></div></div>
         <div class="card" style="box-shadow:none"><b>⚖️ ข้อจำกัดซื่อสัตย์</b><div class="klist"><div>⏳ ช่วงคนเยอะ AI อาจต่อคิวหลายวินาที</div><div>🎬 วิดีโอจริงยังเรนเดอร์ให้ไม่ได้ (ให้เป็นสตอรี่บอร์ดแทน)</div><div>🖼️ ภาพ NSFW อาจถูกกรองโดยระบบ</div></div></div>
       </div>
@@ -356,9 +359,9 @@
   <section class="page" data-page="faq">
     <div class="card">
       <h2 style="margin:0">❓ คำถามพบบ่อย</h2>
-      <details open><summary>ฟรีจริงไหม? ต้องสมัครไหม?</summary><div class="muted">ฟรีจริง ไม่ต้องสมัคร ไม่ต้องกรอกอีเมล เปิดเว็บแล้วใช้ได้เลย โควต้า AI มาจาก Perchance แบบฟรี</div></details>
+      <details open><summary>ฟรีจริงไหม? ต้องสมัครไหม?</summary><div class="muted">ฟรีจริง ไม่ต้องสมัคร ไม่ต้องกรอกอีเมล เปิดเว็บแล้วใช้ได้เลย API ฟรีของ Pollinations แบบไม่ต้องสมัคร</div></details>
       <details><summary>เหมือน Miora ตรงไหน / ต่างตรงไหน?</summary><div class="muted">เหมือนตรงแนวคิด: บรีฟเดียวแตกเป็นภาพ คอนเทนต์ UI วิดีโอ 3D + มี Brand Memory จำสไตล์ ต่างตรงที่เว็บนี้โค้ดใหม่ทั้งหมด ไม่มีระบบล็อกอิน/จ่ายเงิน และวิดีโอให้เป็นสตอรี่บอร์ด+prompt แทนการเรนเดอร์จริง</div></details>
-      <details><summary>ข้อมูลแบรนด์ของฉันไปไหน?</summary><div class="muted">อยู่ในเครื่องคุณเท่านั้น (IndexedDB ผ่าน kv-plugin) ไม่ส่งไปเซิร์ฟเวอร์อื่น ลบได้ด้วยปุ่ม “ล้างความจำ”</div></details>
+      <details><summary>ข้อมูลแบรนด์ของฉันไปไหน?</summary><div class="muted">อยู่ในเบราวเซอร์คุณเท่านั้น (localStorage) ไม่ส่งไปเซิร์ฟเวอร์อื่น ลบได้ด้วยปุ่ม “ล้างความจำ”</div></details>
       <details><summary>ภาพที่สร้างเอาไปใช้เชิงพาณิชย์ได้ไหม?</summary><div class="muted">โดยทั่วไปทำได้ แต่ควรตรวจเงื่อนไขโมเดล/แพลตฟอร์มอีกครั้งสำหรับงานสำคัญ และอย่าใช้ภาพที่มีโลโก้แบรนด์คนอื่นหรือใบหน้าบุคคลจริงโดยไม่ได้รับอนุญาต</div></details>
       <details><summary>กดสร้างแล้วหมุนนาน / ขึ้น error ทำไง?</summary><div class="muted">รอ 10–60 วินาทีแล้วลองใหม่ อย่ากดรัวๆ เพราะคิวต่อคนมีจำกัด ถ้ายังไม่ได้ให้ลดความยาว prompt หรือเปลี่ยนสัดส่วนภาพแล้วลองอีกครั้ง</div></details>
     </div>
@@ -368,7 +371,7 @@
 
 <footer>
   <div class="wrap row" style="justify-content:space-between">
-    <div>AUDDY&TOM Studio • AI Creative Studio ฟรี — สร้างด้วย ❤️ บน Perchance • ทุกลิงก์ในเว็บนี้เป็นเมนูภายใน ตรวจสอบแล้วไม่เสีย</div>
+    <div>AUDDY&TOM Studio • AI Creative Studio ฟรี — รันด้วย API ฟรีของ Pollinations • ทุกลิงก์ในเว็บนี้เป็นเมนูภายใน ตรวจสอบแล้วไม่เสีย</div>
     <div class="row">
       <button class="btn btn-ghost" data-go="home">หน้าแรก</button>
       <button class="btn btn-ghost" data-go="faq">FAQ</button>
@@ -380,7 +383,6 @@
 <script>
 (function(){
   "use strict";
-  const root = window.root; // อ้าง window.root ตรงๆ ไม่พึ่ง scope proxy ของ engine (กัน "root is not defined" ในบางเบราว์เซอร์)
   const $ = (id)=>document.getElementById(id);
   const PAGES = [
     ["home","🏠 หน้าแรก"],["image","🎨 สร้างภาพ"],["content","✍️ คอนเทนต์"],
@@ -394,10 +396,8 @@
     navEl.appendChild(b); mnavEl.appendChild(m);
   });
 
-  let current="home";
   function go(name){
     if(!PAGES.some(p=>p[0]===name)) name="home";
-    current=name;
     document.querySelectorAll(".page").forEach(s=>s.classList.toggle("active", s.dataset.page===name));
     document.querySelectorAll("[data-go]").forEach(b=>{
       if(b.tagName==="BUTTON" && (b.parentElement===navEl||b.parentElement===mnavEl))
@@ -405,7 +405,7 @@
     });
     const hero=$("heroBox"); hero.style.display = (name==="home") ? "" : "none";
     window.scrollTo({top:0,behavior:"smooth"});
-    if(name==="gallery") renderGallery("recent");
+    if(name==="gallery") renderLocalGallery();
   }
   document.addEventListener("click",(e)=>{
     const t=e.target.closest("[data-go],[data-quick]");
@@ -433,36 +433,80 @@
   }
   chipGroup("styleChips",true); chipGroup("toneChips",false); chipGroup("tdStyleChips",false);
 
-  // ถ้าลืม import plugin ใน main.pjs ให้บอกวิธีแก้ตรงๆ แทน error ลึกลับ
-  (function checkPlugins(){
-    const missing = [];
-    if (typeof root === "undefined" || !root) missing.push("generateText = {import:ai-text-plugin}\ngenerateImage = {import:text-to-image-plugin}\nkv = {import:kv-plugin}");
-    else {
-      if (typeof root.generateImage !== "function") missing.push("generateImage = {import:text-to-image-plugin}");
-      if (typeof root.generateText !== "function") missing.push("generateText = {import:ai-text-plugin}");
-      if (!root.kv) missing.push("kv = {import:kv-plugin}");
-    }
-    if (missing.length) {
-      const msg = "⚠️ ใช้ไม่ได้เพราะ main.pjs ขาดบรรทัดนี้ (วางบนสุดของ main.pjs แล้วรีโหลด): " + missing.join(" / ");
-      ["imgStatus","txtStatus","uiStatus","vidStatus","tdStatus","brandStatus"].forEach(id=>{
-        const el = document.getElementById(id);
-        if (el) el.textContent = msg;
-      });
-      console.warn(msg);
-    }
-  })();
-
   function selectedStyles(id){
     return [...$(id).querySelectorAll(".preset.on")].map(x=>x.textContent.trim()).join(", ");
   }
   function singleSelected(id){
     const el=$(id).querySelector(".preset.on"); return el?el.textContent.trim():"";
   }
+  function esc(s){
+    return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
 
-  // ---- Brand memory (kv) ----
+  // ---- local storage (เก็บในเบราว์เซอร์เท่านั้น) ----
+  const LS = (k)=>"auddytom-studio:"+k;
+  function lsGet(k,fb){ try{const v=localStorage.getItem(LS(k)); return v==null?fb:JSON.parse(v);}catch(e){return fb;} }
+  function lsSet(k,v){ try{localStorage.setItem(LS(k),JSON.stringify(v));}catch(e){} }
+  function lsDel(k){ try{localStorage.removeItem(LS(k));}catch(e){} }
+
+  // ---- backends: Pollinations (ฟรี ไม่ต้องใช้ key) ----
+  async function apiText(instruction, signal){
+    const body = JSON.stringify({messages:[{role:"user",content:instruction}],model:"openai"});
+    try{
+      const res = await fetch("https://text.pollinations.ai/",{method:"POST",headers:{"Content-Type":"application/json"},body,signal});
+      if(res.status===402){ const w=res.headers.get("Retry-After")||"30"; throw new Error("ติดลิมิต API ฟรี กรุณารอ ~"+w+" วินาทีแล้วลองใหม่ อย่ากดรัว"); }
+      if(!res.ok) throw new Error("API ข้อความ error "+res.status);
+      return await res.text();
+    }catch(e){
+      if(e&&(e.name==="AbortError"||e.name==="AbortError")) throw e;
+      // fallback: GET (เผื่อบางเบราว์เซอร์บล็อก POST)
+      try{
+        const g = await fetch("https://text.pollinations.ai/"+encodeURIComponent(String(instruction).slice(0,1200)),{signal});
+        if(g.status===402){ const w=g.headers.get("Retry-After")||"30"; throw new Error("ติดลิมิต API ฟรี กรุณารอ ~"+w+" วินาทีแล้วลองใหม่"); }
+        if(!g.ok) throw new Error("API ข้อความ error "+g.status);
+        return await g.text();
+      }catch(e2){ if(e2&&e2.name==="AbortError") throw e2; throw e; }
+    }
+  }
+  function revealAnimated(full,onTok,signal){
+    return new Promise((resolve,reject)=>{
+      let i=0; const step=Math.max(10,Math.ceil(full.length/120));
+      const t=setInterval(()=>{
+        if(signal&&signal.aborted){clearInterval(t);reject(new DOMException("stopped","AbortError"));return;}
+        i=Math.min(full.length,i+step); onTok(full.slice(0,i));
+        if(i>=full.length){clearInterval(t);resolve();}
+      },40);
+    });
+  }
+  function polliImgURL(prompt,w,h){
+    const seed=Math.floor(Math.random()*1000000);
+    return "https://image.pollinations.ai/prompt/"+encodeURIComponent(prompt)+"?width="+w+"&height="+h+"&seed="+seed+"&nologo=true&model=flux";
+  }
+  async function apiImage(prompt,w,h,signal){
+    const url=polliImgURL(prompt,w,h);
+    const ctrl=new AbortController();
+    const onAbort=()=>ctrl.abort();
+    if(signal){ if(signal.aborted) ctrl.abort(); else signal.addEventListener("abort",onAbort,{once:true}); }
+    const timer=setTimeout(()=>ctrl.abort(),180000);
+    let res;
+    try{ res=await fetch(url,{signal:ctrl.signal}); }
+    catch(e){
+      clearTimeout(timer);
+      if(signal&&signal.aborted) throw new DOMException("stopped","AbortError");
+      throw new Error("ต่อ API ภาพไม่ได้ หรือหมดเวลา (ภาพมักใช้เวลา 30–90 วินาที ลองใหม่อีกครั้ง)");
+    }
+    clearTimeout(timer);
+    if(signal) signal.removeEventListener("abort",onAbort);
+    if(res.status===402){ const w8=res.headers.get("Retry-After")||"45"; throw new Error("ติดลิมิต API ภาพฟรี กรุณารอ ~"+w8+" วินาทีแล้วลองใหม่ อย่ากดรัว"); }
+    if(!res.ok) throw new Error("API ภาพ error "+res.status);
+    const blob=await res.blob();
+    return {url:url, objectUrl:URL.createObjectURL(blob)};
+  }
+
+  // ---- Brand memory ----
   const BM_KEY="brand-memory-v1";
   async function getBrand(){
-    try{ return (await root.kv.brand.get(BM_KEY)) || {}; }catch(e){ return {}; }
+    try{ return lsGet(BM_KEY,{}) || {}; }catch(e){ return {}; }
   }
   function brandLine(b){
     const parts=[];
@@ -487,72 +531,78 @@
   }
   $("brandSaveBtn").onclick=async()=>{
     const b={name:$("brandName").value.trim(),tone:$("brandTone").value.trim(),colors:$("brandColors").value.trim(),style:$("brandStyle").value.trim(),avoid:$("brandAvoid").value.trim()};
-    await root.kv.brand.set(BM_KEY,b);
+    lsSet(BM_KEY,b);
     $("brandStatus").textContent="✅ บันทึกแล้ว"; refreshBrandUI();
   };
-  $("brandClearBtn").onclick=async()=>{ await root.kv.brand.delete(BM_KEY); refreshBrandUI(); };
+  $("brandClearBtn").onclick=async()=>{ lsDel(BM_KEY); refreshBrandUI(); };
   refreshBrandUI();
 
   // ---- IMAGE ----
-  let lastImgUrl=null;
-  function pushImgHistory(prompt,url){
-    root.kv.history.get("imgs").then(async (arr)=>{
-      arr=arr||[];
-      arr.unshift({prompt,url,at:new Date().toISOString()});
-      arr=arr.slice(0,12);
-      try{await root.kv.history.set("imgs",arr);}catch(e){}
-      renderImgHistory(arr);
-    }).catch(()=>{});
+  let lastDl=null;
+  function ratioWH(v){ const p=String(v||"768x768").split("x"); return [parseInt(p[0],10)||768, parseInt(p[1],10)||768]; }
+  function pushImgHistory(item){
+    const arr=lsGet("imgs",[]); arr.unshift(item); const cut=arr.slice(0,12); lsSet("imgs",cut); renderImgHistory(cut);
   }
-  async function renderImgHistory(arr){
-    try{ arr=arr||await root.kv.history.get("imgs")||[]; }catch(e){arr=[];}
+  function renderImgHistory(arr){
+    try{ arr=arr||lsGet("imgs",[])||[]; }catch(e){arr=[];}
     const box=$("imgHistory");
     if(!arr.length){box.innerHTML='<div class="muted">ยังไม่มีประวัติ — สร้างภาพแรกได้เลย</div>';return;}
     box.innerHTML="";
     arr.forEach(h=>{
       const d=document.createElement("div"); d.className="history-item";
-      d.innerHTML=`<div>${h.prompt?h.prompt.replace(/</g,"&lt;"):""}</div><div class="muted">${h.at||""}</div>`;
-      if(h.url){const im=document.createElement("img");im.src=h.url;im.loading="lazy";d.appendChild(im);}
+      d.innerHTML=`<div>${esc(h.prompt)}</div><div class="muted">${esc(h.at||"")}</div>`;
+      if(h.url){const im=document.createElement("img");im.src=h.url;im.loading="lazy";im.alt="";d.appendChild(im);}
       box.appendChild(d);
     });
   }
-  renderImgHistory();
-  $("imgClearHist").onclick=async()=>{await root.kv.history.delete("imgs");renderImgHistory();};
+  renderImgHistory(lsGet("imgs",[]));
+  $("imgClearHist").onclick=()=>{ lsDel("imgs"); renderImgHistory([]); renderLocalGallery(); };
 
+  let imgAbort=null;
   $("imgGenBtn").onclick=async()=>{
+    if(imgAbort) imgAbort.abort();
+    imgAbort=new AbortController(); const sig=imgAbort.signal;
     const btn=$("imgGenBtn"); btn.disabled=true;
-    const box=$("imgResult"); lastImgUrl=null; $("imgDlBtn").disabled=true;
-    box.innerHTML='<div><div class="spinner"></div><div class="loadline">กำลังวาดภาพ<span class="dots"></span> (10–40 วินาที)</div></div>';
+    const box=$("imgResult"); lastDl=null; $("imgDlBtn").disabled=true;
+    box.innerHTML='<div><div class="spinner"></div><div class="loadline">กำลังวาดภาพ<span class="dots"></span> (ประมาณ 30–90 วินาที)</div></div>';
     $("imgStatus").textContent="กำลังสร้าง...";
     try{
-      const b=await getBrand();
+      const b=await getBrand(); if(sig.aborted) return;
       const base=$("imgPromptInput").value.trim()||"beautiful cozy cafe";
       const styles=selectedStyles("styleChips");
-      const full=`${base}, ${styles}${b.style?`, ${b.style}`:""}${b.colors?`, brand colors ${b.colors}`:""}`;
-      const ratio=$("imgRatioSel").value||"768x768";
       const neg=$("imgNegInput").value.trim();
-      const r=await root.generateImage(full,{resolution:ratio,negativePrompt:neg||undefined});
+      const full=`${base}, ${styles}${b.style?`, ${b.style}`:""}${b.colors?`, brand colors ${b.colors}`:""}`+(neg?` (avoid: ${neg})`:"");
+      const wh=ratioWH($("imgRatioSel").value);
+      const r=await apiImage(full,wh[0],wh[1],sig); if(sig.aborted) return;
       box.innerHTML="";
       const img=document.createElement("img");
-      img.src=r.dataUrl; img.alt=full; img.style.width="100%"; img.style.height="auto";
+      img.src=r.objectUrl; img.alt=full; img.style.width="100%"; img.style.height="auto";
       box.appendChild(img);
-      lastImgUrl=r.dataUrl;
+      lastDl={url:r.url,name:"auddy-tom-studio.jpg"};
       $("imgDlBtn").disabled=false;
       $("imgStatus").textContent="✅ เสร็จแล้ว — กดดาวน์โหลดได้เลย";
-      pushImgHistory(full, r.dataUrl);
+      pushImgHistory({prompt:full,url:r.url,at:new Date().toISOString()});
     }catch(e){
-      console.warn(e);
-      box.innerHTML='<div class="muted" style="padding:20px">❌ สร้างไม่สำเร็จ: '+(e&&e.message?e.message:e)+' — รอ 10 วินาทีแล้วลองใหม่ อย่ากดรัว</div>';
-      $("imgStatus").textContent="เกิดข้อผิดพลาด ลองใหม่อีกครั้ง";
-    }finally{btn.disabled=false;}
+      if(e&&e.name==="AbortError"){ box.innerHTML='<div class="muted" style="padding:20px">หยุดแล้ว</div>'; $("imgStatus").textContent="หยุดแล้ว"; }
+      else{
+        console.warn(e);
+        box.innerHTML='<div class="muted" style="padding:20px">❌ สร้างไม่สำเร็จ: '+esc(e&&e.message?e.message:e)+'</div>';
+        $("imgStatus").textContent="เกิดข้อผิดพลาด ลองใหม่อีกครั้ง";
+      }
+    }finally{btn.disabled=false;imgAbort=null;}
   };
-  $("imgDlBtn").onclick=()=>{
-    if(!lastImgUrl) return;
-    const a=document.createElement("a"); a.href=lastImgUrl; a.download="auddy-tom-studio.png"; a.click();
+  $("imgDlBtn").onclick=async()=>{
+    if(!lastDl) return;
+    try{
+      const r=await fetch(lastDl.url); if(!r.ok) throw new Error("dl");
+      const b=await r.blob(); const u=URL.createObjectURL(b);
+      const a=document.createElement("a"); a.href=u; a.download=lastDl.name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(u),5000);
+    }catch(e){ window.open(lastDl.url,"_blank"); }
   };
 
-  // ---- TEXT (streaming, cancellable) ----
-  let txtHandle=null;
+  // ---- TEXT (มีปุ่มหยุด) ----
+  let txtAbort=null;
   const TYPE_PROMPT={
     caption:"เขียนแคปชันขายของภาษาไทย 3 เวอร์ชัน (สั้น/กลาง/ยาว) พร้อม call-to-action และ hashtag 10 อัน",
     seo:"เขียนบทความ SEO ภาษาไทย มีหัวข้อ H2/H3 เปิดด้วย hook สรุปท้ายบทความ",
@@ -561,27 +611,28 @@
     story:"เขียนเรื่องสั้นภาษาไทย 300-500 คำ เปิดเรื่องดึงดูด จบประทับใจ"
   };
   $("txtGenBtn").onclick=async()=>{
-    if(txtHandle&&txtHandle.stop) try{txtHandle.stop();}catch(e){}
+    if(txtAbort) txtAbort.abort();
+    txtAbort=new AbortController(); const sig=txtAbort.signal;
     const topic=$("txtTopicInput").value.trim()||"สินค้าใหม่";
     const type=$("txtTypeSel").value;
     const tone=singleSelected("toneChips")||"เป็นกันเอง";
-    const b=await getBrand();
+    const b=await getBrand(); if(sig.aborted) return;
     const instruction=`งาน: ${TYPE_PROMPT[type]}\nหัวข้อ/บรีฟ: ${topic}\nโทนเสียง: ${tone}${b.tone?` (brand tone: ${b.tone})`:""}${b.name?`\nแบรนด์: ${b.name}`:""}${b.avoid?`\nข้อห้าม: ${b.avoid}`:""}\nภาษา: ภาษาไทยเป็นหลัก อ่านง่าย ขายได้จริง ห้ามมีลิงก์ปลอม ห้ามอ้าง URL ถ้าไม่จำเป็น`;
     const out=$("txtOut"); out.textContent="";
     $("txtStatus").textContent="กำลังเขียน..."; $("txtStopBtn").disabled=false; $("txtGenBtn").disabled=true;
     try{
-      const p=root.generateText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar;}});
-      txtHandle=p;
-      const final=await p;
-      out.textContent=final.text||final;
+      const full=await apiText(instruction,sig);
+      await revealAnimated(full,(t)=>{out.textContent=t;},sig);
       $("txtStatus").textContent="✅ เสร็จแล้ว";
-      const arr=(await root.kv.history.get("texts").catch(()=>null))||[];
-      arr.unshift({topic,type,text:String(final).slice(0,2000),at:new Date().toISOString()});
-      await root.kv.history.set("texts",arr.slice(0,10)).catch(()=>{});
-    }catch(e){ out.textContent="❌ เขียนไม่สำเร็จ: "+(e&&e.message?e.message:e); $("txtStatus").textContent="ลองใหม่อีกครั้ง";
-    }finally{$("txtStopBtn").disabled=true;$("txtGenBtn").disabled=false;txtHandle=null;}
+      const arr=lsGet("texts",[]);
+      arr.unshift({topic,type,text:String(full).slice(0,2000),at:new Date().toISOString()});
+      lsSet("texts",arr.slice(0,10));
+    }catch(e){
+      if(e&&e.name==="AbortError"){ out.textContent="หยุดแล้ว"; $("txtStatus").textContent="หยุดแล้ว"; }
+      else{ out.textContent="❌ เขียนไม่สำเร็จ: "+esc(e&&e.message?e.message:e); $("txtStatus").textContent="ลองใหม่อีกครั้ง"; }
+    }finally{$("txtStopBtn").disabled=true;$("txtGenBtn").disabled=false;txtAbort=null;}
   };
-  $("txtStopBtn").onclick=()=>{ if(txtHandle&&txtHandle.stop) txtHandle.stop(); $("txtStatus").textContent="หยุดแล้ว"; $("txtStopBtn").disabled=true; $("txtGenBtn").disabled=false; };
+  $("txtStopBtn").onclick=()=>{ if(txtAbort) txtAbort.abort(); };
   $("txtCopyBtn").onclick=async()=>{ try{await navigator.clipboard.writeText($("txtOut").textContent);$("txtStatus").textContent="📋 คัดลอกแล้ว";}catch(e){$("txtStatus").textContent="คัดลอกไม่ได้ ให้ลากคลุมแล้ว Ctrl+C";} };
 
   // ---- UIUX ----
@@ -606,21 +657,23 @@
     const out=$("uiOut"); out.textContent=""; $("uiStatus").textContent="กำลังออกแบบ..."; $("uiGenBtn").disabled=true;
     const instruction=`คุณคือนักออกแบบ UI/UX อาวุโส ตอบเป็นภาษาไทย โครงสร้าง:\n1) สรุปแนวคิด 1 ย่อหน้า\n2) ผู้ใช้ 3 กลุ่ม + งานหลักของแต่ละกลุ่ม\n3) โครงหน้า 5 จอ (ชื่อจอ / องค์ประกอบ / CTA)\n4) UX flow 6 ขั้น\n5) พาเลตต์สี 4 สี (hex) + ฟอนต์แนะนำ\n6) 3 หลัก UX ที่ต้องระวัง\n7) image prompt ภาษาอังกฤษ 1 ย่อหน้าสำหรับทำ moodboard\nไอเดีย: ${idea}${b.name?`\nแบรนด์: ${b.name}, โทน ${b.tone||"-"}, สี ${b.colors||"-"}, ห้าม ${b.avoid||"-"}`:""}\nห้ามใส่ลิงก์ปลอม`;
     try{
-      const r=await root.generateText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar;}});
-      out.textContent=r.text||r; $("uiStatus").textContent="✅ เสร็จแล้ว";
-    }catch(e){out.textContent="❌ เกิดข้อผิดพลาด: "+(e&&e.message?e.message:e);}
+      const full=await apiText(instruction);
+      await revealAnimated(full,(t)=>{out.textContent=t;});
+      $("uiStatus").textContent="✅ เสร็จแล้ว";
+    }catch(e){out.textContent="❌ เกิดข้อผิดพลาด: "+esc(e&&e.message?e.message:e);}
     finally{$("uiGenBtn").disabled=false;}
   };
   $("uiCopyBtn").onclick=async()=>{try{await navigator.clipboard.writeText($("uiOut").textContent);$("uiStatus").textContent="📋 คัดลอกแล้ว";}catch(e){$("uiStatus").textContent="คัดลอกไม่ได้ ให้ลากคลุมแล้ว Ctrl+C";}};
   $("uiMoodBtn").onclick=async()=>{
-    const idea=$("uiIdeaInput").value.trim();
+    const idea=$("uiIdeaInput").value.trim()||"app UI";
     const box=$("uiImgResult"); box.hidden=false;
     box.innerHTML='<div><div class="spinner"></div><div class="loadline">กำลังวาดมู้ดบอร์ด<span class="dots"></span></div></div>';
     try{
       const b=await getBrand();
-      const r=await root.generateImage(`app UI moodboard collage, ${idea}, clean minimal, ${b.style||"modern soft"}, high quality`,{resolution:"768x512"});
-      box.innerHTML=""; const im=document.createElement("img"); im.src=r.dataUrl; im.style.width="100%"; box.appendChild(im);
-    }catch(e){box.innerHTML='<div class="muted" style="padding:16px">วาดมู้ดบอร์ดไม่สำเร็จ ลองใหม่อีกครั้ง</div>';}
+      const r=await apiImage(`app UI moodboard collage, ${idea}, clean minimal, ${b.style||"modern soft"}, high quality`,768,512);
+      box.innerHTML=""; const im=document.createElement("img"); im.src=r.objectUrl; im.style.width="100%"; im.alt=""; box.appendChild(im);
+      pushImgHistory({prompt:`moodboard: ${idea}`,url:r.url,at:new Date().toISOString()});
+    }catch(e){box.innerHTML='<div class="muted" style="padding:16px">'+esc(e&&e.message?e.message:e)+'</div>';}
   };
 
   // ---- VIDEO ----
@@ -631,9 +684,10 @@
     const out=$("vidOut"); out.textContent=""; $("vidStatus").textContent="กำลังแตกช็อต..."; $("vidGenBtn").disabled=true;
     const instruction=`คุณคือผู้กำกับโฆษณา เขียนสตอรี่บอร์ดภาษาไทย สำหรับวิดีโอ "${idea}" ความยาว ${len}\nโครง: ตารางช็อต (เวลา/ภาพ/มุมกล้อง/เสียง/บทพูด) 6-10 ช็อต, shot list ถ่ายจริง, prompt ภาษาอังกฤษ 3 อันสำหรับเครื่องมือ AI video (เช่น runway/pika), เพลง/ซาวด์แนะนำ\n${b.name?`แบรนด์ ${b.name} โทน ${b.tone||""}`:""}\nห้ามใส่ลิงก์จริง ให้บอกชื่อเครื่องมือเป็นข้อความเท่านั้น`;
     try{
-      const r=await root.generateText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar;}});
-      out.textContent=r.text||r; $("vidStatus").textContent="✅ เสร็จแล้ว เอา prompt ไปวางในเครื่องมือวิดีโอได้เลย";
-    }catch(e){out.textContent="❌ "+(e&&e.message?e.message:e);}
+      const full=await apiText(instruction);
+      await revealAnimated(full,(t)=>{out.textContent=t;});
+      $("vidStatus").textContent="✅ เสร็จแล้ว เอา prompt ไปวางในเครื่องมือวิดีโอได้เลย";
+    }catch(e){out.textContent="❌ "+esc(e&&e.message?e.message:e);}
     finally{$("vidGenBtn").disabled=false;}
   };
   $("vidCopyBtn").onclick=async()=>{try{await navigator.clipboard.writeText($("vidOut").textContent);$("vidStatus").textContent="📋 คัดลอกแล้ว";}catch(e){$("vidStatus").textContent="คัดลอกไม่ได้ ให้ลากคลุมแล้ว Ctrl+C";}};
@@ -645,9 +699,9 @@
     const b=await getBrand();
     $("tdStatus").textContent="กำลังเขียน prompt...";
     try{
-      const r=await root.generateText({instruction:`Write ONE excellent English text-to-3d / text-to-image 3D render prompt for: "${obj}". Style: ${st}. Include: subject detail, materials, lighting, camera angle, background, quality keywords (octane, 8k, subsurface scattering...), negative prompt line. Then Thai explanation 3 บรรทัดว่าทำไม prompt นี้ดี. Brand context: ${b.style||"-"}. No fake links.`});
-      $("tdOut").textContent=r.text||r; $("tdStatus").textContent="✅ ได้ prompt แล้ว — กดสร้างภาพพรีวิวได้เลย";
-    }catch(e){$("tdOut").textContent="❌ "+(e&&e.message?e.message:e);}
+      const full=await apiText(`Write ONE excellent English text-to-3d / text-to-image 3D render prompt for: "${obj}". Style: ${st}. Include: subject detail, materials, lighting, camera angle, background, quality keywords (octane, 8k, subsurface scattering...), negative prompt line. Then Thai explanation 3 บรรทัดว่าทำไม prompt นี้ดี. Brand context: ${b.style||"-"}. No fake links.`);
+      $("tdOut").textContent=full; $("tdStatus").textContent="✅ ได้ prompt แล้ว — กดสร้างภาพพรีวิวได้เลย";
+    }catch(e){$("tdOut").textContent="❌ "+esc(e&&e.message?e.message:e);}
   };
   $("tdImgBtn").onclick=async()=>{
     const obj=$("tdObjInput").value.trim()||"cute robot";
@@ -656,23 +710,31 @@
     box.innerHTML='<div><div class="spinner"></div><div class="loadline">กำลังเรนเดอร์พรีวิว<span class="dots"></span></div></div>';
     $("tdStatus").textContent="กำลังสร้างภาพ...";
     try{
-      const r=await root.generateImage(`${obj}, ${st}, centered, studio lighting, high detail, masterpiece`,{resolution:"768x768"});
-      box.innerHTML=""; const im=document.createElement("img"); im.src=r.dataUrl; im.style.width="100%"; box.appendChild(im);
+      const r=await apiImage(`${obj}, ${st}, centered, studio lighting, high detail, masterpiece`,768,768);
+      box.innerHTML=""; const im=document.createElement("img"); im.src=r.objectUrl; im.style.width="100%"; im.alt=""; box.appendChild(im);
       $("tdStatus").textContent="✅ เสร็จแล้ว";
-    }catch(e){box.innerHTML='<div class="muted" style="padding:16px">สร้างไม่สำเร็จ ลองใหม่อีกครั้ง</div>';}
+      pushImgHistory({prompt:`3d preview: ${obj}`,url:r.url,at:new Date().toISOString()});
+    }catch(e){box.innerHTML='<div class="muted" style="padding:16px">'+esc(e&&e.message?e.message:e)+'</div>';}
   };
   $("tdCopyBtn").onclick=async()=>{try{await navigator.clipboard.writeText($("tdOut").textContent);$("tdStatus").textContent="📋 คัดลอกแล้ว";}catch(e){$("tdStatus").textContent="คัดลอกไม่ได้ ให้ลากคลุมแล้ว Ctrl+C";}};
 
-  // ---- Gallery ----
-  function renderGallery(sort){
-    const box=$("galleryBox"); box.innerHTML='<div class="muted" style="padding:18px">กำลังโหลดแกลเลอรี...</div>';
-    try{
-      box.innerHTML=root.generateImage({gallery:true,sort:sort||"recent",adaptiveHeight:true});
-    }catch(e){box.innerHTML='<div class="muted" style="padding:18px">โหลดแกลเลอรีไม่ได้ตอนนี้ (ยังไม่มีภาพที่เซฟ หรือเครือข่ายขัดข้อง)</div>';}
+  // ---- Gallery (ในเครื่อง) ----
+  function renderLocalGallery(){
+    const box=$("galleryBox"); const arr=lsGet("imgs",[]);
+    const c=$("galCount"); if(c) c.textContent = arr.length?("ทั้งหมด "+arr.length+" ภาพ"):"";
+    if(!arr.length){box.innerHTML='<div class="muted" style="padding:18px">ยังไม่มีภาพ — ไปสร้างที่เมนู “สร้างภาพ” ได้เลย ภาพจะมาโผล่ตรงนี้เอง</div>';return;}
+    box.innerHTML="";
+    const g=document.createElement("div"); g.className="gal-grid";
+    arr.forEach(h=>{
+      const im=document.createElement("img"); im.src=h.url; im.loading="lazy"; im.alt=""; im.title=h.prompt||"";
+      g.appendChild(im);
+    });
+    box.appendChild(g);
   }
-  $("galRecent").onclick=()=>renderGallery("recent");
-  $("galTop").onclick=()=>renderGallery("top");
+  $("galRefresh").onclick=()=>renderLocalGallery();
+  $("galClear").onclick=()=>{ lsDel("imgs"); renderImgHistory([]); renderLocalGallery(); };
 
   go("home");
 })();
+
 </script>

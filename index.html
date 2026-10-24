@@ -1,3 +1,11 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AUDDY&TOM Studio</title>
+</head>
+<body>
 <style>
   :root{
     --bg:#fafaf8; --card:#ffffff; --ink:#17130e; --muted:#7a736a;
@@ -443,7 +451,7 @@
     return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   }
 
-  // ---- local storage (เก็บในเบราว์เซอร์เท่านั้น) ----
+  // ---- local storage (แทน kv-plugin: เก็บในเบราว์เซอร์เท่านั้น) ----
   const LS = (k)=>"auddytom-studio:"+k;
   function lsGet(k,fb){ try{const v=localStorage.getItem(LS(k)); return v==null?fb:JSON.parse(v);}catch(e){return fb;} }
   function lsSet(k,v){ try{localStorage.setItem(LS(k),JSON.stringify(v));}catch(e){} }
@@ -738,3 +746,6 @@
 })();
 
 </script>
+
+</body>
+</html>

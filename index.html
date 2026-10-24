@@ -90,6 +90,7 @@
     <div class="logo" data-go="home"><div class="logo-mark">A</div> AUDDY&TOM Studio <span class="pill-free">ฟรี 100%</span></div>
     <nav class="nav" id="navEl"></nav>
     <div class="top-cta">
+      <span id="plugPill" class="pill-free" style="background:#eee;color:#555" title="สถานะปลั๊กอิน AI">⏳ กำลังโหลด AI...</span>
       <button class="btn btn-ghost" data-go="pricing">ราคา</button>
       <button class="btn btn-dark" data-go="image">เริ่มสร้าง →</button>
     </div>
@@ -415,6 +416,7 @@
       <details><summary>ข้อมูลแบรนด์ของฉันไปไหน?</summary><div class="muted">อยู่ในเครื่องคุณเท่านั้น (IndexedDB ผ่าน kv-plugin) ไม่ส่งไปเซิร์ฟเวอร์อื่น ลบได้ด้วยปุ่ม “ล้างความจำ”</div></details>
       <details><summary>ภาพที่สร้างเอาไปใช้เชิงพาณิชย์ได้ไหม?</summary><div class="muted">โดยทั่วไปทำได้ แต่ควรตรวจเงื่อนไขโมเดล/แพลตฟอร์มอีกครั้งสำหรับงานสำคัญ และอย่าใช้ภาพที่มีโลโก้แบรนด์คนอื่นหรือใบหน้าบุคคลจริงโดยไม่ได้รับอนุญาต</div></details>
       <details><summary>กดสร้างแล้วหมุนนาน / ขึ้น error ทำไง?</summary><div class="muted">รอ 10–60 วินาทีแล้วลองใหม่ อย่ากดรัวๆ เพราะคิวต่อคนมีจำกัด ถ้ายังไม่ได้ให้ลดความยาว prompt หรือเปลี่ยนสัดส่วนภาพแล้วลองอีกครั้ง</div></details>
+      <details><summary>เอาไปลง GitHub / เว็บตัวเองแล้ว AI ไม่มา?</summary><div class="muted">AI ตัวหลักเป็นปลั๊กอินของ Perchance ใช้ได้เฉพาะตอนรันบน perchance.org เท่านั้น ถ้าก๊อปไฟล์ไปโฮสต์เอง (เช่น GitHub Pages) เว็บจะสลับไปใช้ AI สำรอง (Pollinations ฟรี) + จำค่าต่างๆ ในเครื่องด้วย localStorage ให้อัตโนมัติ วิธีใช้ตัวหลักเต็มๆ: เปิดลิงก์ perchance.org ตรงๆ หรือฝังด้วย &lt;iframe src="https://null.perchance.org/ชื่อเว็บคุณ" style="width:100%;height:900px;border:0"&gt;&lt;/iframe&gt; — ดูป้ายมุมขวาบน: 🟢=ตัวหลักพร้อม 🌐=โหมดเว็บนอก</div></details>
     </div>
   </section>
 
@@ -433,29 +435,131 @@
 
 <script>
 (function(){
-  // Perchance สโคป plugin: ใน inline classic script ให้อ้างชื่อตรงๆ (generateText/generateImage/kv)
-  // ส่วน `root` มีเฉพาะบางสโคป — resolver นี้ลองทุกทาง "ตอนกดปุ่ม" (lazy) เพราะ plugin โหลดช้ากว่าโค้ดหน้าเว็บ
-  function plug(name){
-    try{ if(typeof root!=="undefined"&&root&&root[name]!==undefined) return root[name]; }catch(e){}
-    try{ const v=eval(name); if(v!==undefined) return v; }catch(e){}
-    try{ if(typeof window!=="undefined"&&window[name]!==undefined) return window[name]; }catch(e){}
-    return undefined;
-  }
-  const PLUG_ERR="ปลั๊กอิน AI ยังโหลดไม่เสร็จ — รอ 5 วินาทีแล้วกดปุ่มเดิมอีกครั้ง (ไม่ต้องรีเฟรชก็ได้)";
-  function lazyPlug(name){
-    const fn=function(...a){ const f=plug(name); if(!f) throw new Error(PLUG_ERR); return f.apply(this,a); };
-    return new Proxy(fn,{ get:(t,k)=>{
-      if(k==="__isLazyPlug") return true;
-      const f=plug(name); if(!f) return undefined;
-      const v=f[k]; return (typeof v==="function")?v.bind(f):v;
-    }});
-  }
-  const GText=lazyPlug("generateText"), GImg=lazyPlug("generateImage"), KVB=lazyPlug("kv");
-  function needPlugins(){
-    if(plug("generateText")&&plug("generateImage")&&plug("kv")) return true;
-    alert(PLUG_ERR);
+  // Dual-mode: บน perchance.org ใช้ปลั๊กอิน Perchance / นอกนั้น (GitHub Pages) ใช้ AI สำรอง + localStorage
+  function isPerchanceEnv(){
+    try{
+      if(typeof root!=="undefined"&&!!root) return true;
+      if(typeof window!=="undefined"&&window.generatorName) return true;
+      if(typeof location!=="undefined"&&/perchance\.org$/.test(location.hostname)) return true;
+    }catch(e){}
     return false;
   }
+  async function pollinationsText(instruction, onChunk){
+    var url="https://text.pollinations.ai/"+encodeURIComponent(String(instruction).slice(0,4000));
+    var ctrl=new AbortController();
+    var to=setTimeout(function(){ctrl.abort();},90000);
+    try{
+      var res=await fetch(url,{signal:ctrl.signal,headers:{Accept:"text/plain"}});
+      clearTimeout(to);
+      if(!res.ok) throw new Error("HTTP "+res.status);
+      var txt=await res.text();
+      if(onChunk) try{ onChunk({fullTextSoFar:txt,textChunk:txt}); }catch(ee){}
+      return {text:txt};
+    }catch(e){ clearTimeout(to); throw e; }
+  }
+  function pollinationsImageUrl(prompt, ratio){
+    var p=encodeURIComponent(String(prompt).slice(0,1500));
+    var wh=(ratio==="512x768")?"width=512&height=768":(ratio==="768x512")?"width=768&height=512":"width=768&height=768";
+    return "https://image.pollinations.ai/prompt/"+p+"?"+wh+"&nologo=true";
+  }
+  var LS = {
+    get:function(k){ try{ var v=localStorage.getItem("auddy-tom-"+k); return v?JSON.parse(v):null; }catch(e){ return null; } },
+    set:function(k,v){ try{ localStorage.setItem("auddy-tom-"+k, JSON.stringify(v)); }catch(e){} },
+    del:function(k){ try{ localStorage.removeItem("auddy-tom-"+k); }catch(e){} }
+  };
+  function plug(name){
+    try{ if(typeof root!=="undefined"&&root&&root[name]!==undefined&&root[name]!==null) return root[name]; }catch(e){}
+    try{ if(typeof globalThis!=="undefined"&&globalThis[name]!==undefined&&globalThis[name]!==null) return globalThis[name]; }catch(e){}
+    try{ if(typeof window!=="undefined"&&window[name]!==undefined&&window[name]!==null) return window[name]; }catch(e){}
+    try{ var v=eval(name); if(v!==undefined&&v!==null) return v; }catch(e){}
+    return undefined;
+  }
+  var plugState={tries:0,lastDiag:"",ready:{generateText:false,generateImage:false,kv:false}};
+  function plugDiag(name){
+    var d={name:name,foundVia:null,rootType:"n/a",hasRoot:false,iframe:false,err:"",external:!isPerchanceEnv()};
+    try{ d.hasRoot=(typeof root!=="undefined"&&!!root); }catch(e){ d.err+="hasRoot:"+e.message+"; "; }
+    try{ d.rootType=(typeof root); }catch(e){ d.rootType="err"; }
+    try{ if(typeof root!=="undefined"&&root&&root[name]!==undefined&&root[name]!==null) d.foundVia="root"; }catch(e){ d.err+="root:"+e.message+"; "; }
+    try{ d.iframe=!!document.querySelector("#aiTextPluginEmbedIframe"); }catch(ee){}
+    return d;
+  }
+  function updatePlugPill(){
+    var pill=document.getElementById("plugPill");
+    if(!pill) return;
+    if(!isPerchanceEnv()){ pill.textContent="🌐 โหมดเว็บนอก — ใช้ AI สำรอง"; pill.style.background="#334155"; pill.style.color="#fff"; return; }
+    var t2=!!plug("generateText"), i2=!!plug("generateImage"), k2=!!plug("kv");
+    plugState.ready={generateText:t2,generateImage:i2,kv:k2};
+    if(t2&&i2&&k2){ pill.textContent="🟢 AI พร้อมแล้ว"; pill.style.background="#0f7b3d"; pill.style.color="#fff"; }
+    else if(t2||i2||k2){ pill.textContent="🟡 AI กำลังโหลด..."; pill.style.background="#9a5b00"; pill.style.color="#fff"; }
+    else { pill.textContent="🔴 AI ยังไม่มา — แตะเพื่อเช็ค"; pill.style.background="#ac2c2c"; pill.style.color="#fff"; }
+  }
+  document.addEventListener("click",function(e){
+    var pill=e.target.closest&&e.target.closest("#plugPill");
+    if(!pill) return;
+    if(!isPerchanceEnv()){ alert("รันนอก perchance.org (เช่น GitHub Pages) — ใช้ AI สำรองอัตโนมัติ"); return; }
+    var ds=["generateText","generateImage","kv"].map(plugDiag);
+    alert("สถานะปลั๊กอิน:\n"+ds.map(function(d){return d.name+": "+(d.foundVia?("เจอผ่าน "+d.foundVia):"ยังไม่เจอ");}).join("\n")+"\n\nถ้ายังไม่เจอ: ปิด adblock / ใช้ Chrome / ลองเน็ตมือถือ");
+  });
+  function waitPlug(name, timeoutMs){
+    timeoutMs = timeoutMs || 45000;
+    var start = Date.now();
+    return new Promise(function(resolve){
+      function tick(){
+        var f=null;
+        try{ f=plug(name); }catch(e){ f=null; }
+        plugState.tries++;
+        if(f){ updatePlugPill(); resolve(f); return; }
+        if(Date.now()-start>=timeoutMs){ resolve(null); return; }
+        if(plugState.tries%4===0) updatePlugPill();
+        setTimeout(tick,300);
+      }
+      tick();
+    });
+  }
+  async function ensurePlugs(names, statusEl){
+    var got={};
+    for(var idx=0;idx<names.length;idx++){
+      var n=names[idx];
+      var already=plug(n);
+      if(already){ got[n]=already; continue; }
+      if(!isPerchanceEnv()) return null;
+      var t0=Date.now();
+      if(statusEl) statusEl.textContent="⏳ กำลังรอปลั๊กอิน "+n+" โหลด... (ครั้งแรกอาจใช้เวลา 5–30 วินาที ไม่ต้องรีเฟรช)";
+      var timer=setInterval(function(){
+        var s=Math.round((Date.now()-t0)/1000);
+        if(statusEl) statusEl.textContent="⏳ กำลังรอปลั๊กอิน "+n+" โหลด... "+s+" วินาทีแล้ว";
+      },1000);
+      var f=await waitPlug(n,45000);
+      clearInterval(timer);
+      if(!f){ updatePlugPill(); return null; }
+      got[n]=f;
+    }
+    updatePlugPill();
+    return got;
+  }
+  (function warmPlugs(){
+    updatePlugPill();
+    var tryPreload=function(){
+      try{
+        var g=plug("generateText");
+        if(g){ try{ g({preload:true}); }catch(e){} updatePlugPill(); return true; }
+      }catch(e){}
+      return false;
+    };
+    var n=0;
+    var iv=setInterval(function(){
+      updatePlugPill();
+      if(tryPreload()){ clearInterval(iv); return; }
+      if(++n>40){ clearInterval(iv); return; }
+    },1000);
+    setTimeout(function(){ try{ refreshBrandUI(false); }catch(e){} },3000);
+  })();
+  window.__auddyDiag=function(){
+    var env="perchance";
+    try{ env=isPerchanceEnv()?"perchance":"external"; }catch(e){}
+    var ds=["generateText","generateImage","kv"].map(plugDiag);
+    return {env:env, pill:(document.getElementById("plugPill")||{}).textContent||null, ready:plugState.ready, details:ds, href:location.href, online:navigator.onLine};
+  };
   const $ = (id)=>document.getElementById(id);
   const PAGES = [
     ["home","🏠 หน้าแรก"],["image","🎨 สร้างภาพ"],["content","✍️ คอนเทนต์"],
@@ -519,7 +623,11 @@
   // ---- Brand memory (kv) ----
   const BM_KEY="brand-memory-v1";
   async function getBrand(){
-    try{ return (await KVB.brand.get(BM_KEY)) || {}; }catch(e){ return {}; }
+    try{
+      var kv=plug("kv");
+      if(kv&&kv.brand) return (await kv.brand.get(BM_KEY)) || LS.get(BM_KEY) || {};
+      return LS.get(BM_KEY) || {};
+    }catch(e){ try{ return LS.get(BM_KEY)||{}; }catch(ee){ return {}; } }
   }
   function brandLine(b){
     const parts=[];
@@ -531,7 +639,12 @@
     return parts.length?(" (Brand: "+parts.join(" | ")+")"):"";
   }
   async function refreshBrandUI(){
-    const b=await getBrand();
+    var kv0=plug("kv");
+    if(!kv0 && isPerchanceEnv()){
+      $("brandStatus").textContent="⏳ กำลังรอที่เก็บความจำโหลด...";
+      await waitPlug("kv",20000);
+    }
+    var b={}; try{ b=await getBrand(); }catch(e){ b={}; }
     if($("brandName")) $("brandName").value=b.name||"";
     if($("brandTone")) $("brandTone").value=b.tone||"";
     if($("brandColors")) $("brandColors").value=b.colors||"";
@@ -544,25 +657,36 @@
   }
   $("brandSaveBtn").onclick=async()=>{
     const b={name:$("brandName").value.trim(),tone:$("brandTone").value.trim(),colors:$("brandColors").value.trim(),style:$("brandStyle").value.trim(),avoid:$("brandAvoid").value.trim()};
-    await KVB.brand.set(BM_KEY,b);
+    try{
+      var kv=plug("kv");
+      if(kv&&kv.brand) await kv.brand.set(BM_KEY,b);
+    }catch(e){}
+    LS.set(BM_KEY,b);
     $("brandStatus").textContent="✅ บันทึกแล้ว"; refreshBrandUI();
   };
-  $("brandClearBtn").onclick=async()=>{ await KVB.brand.delete(BM_KEY); refreshBrandUI(); };
+  $("brandClearBtn").onclick=async()=>{ try{ var kv2=plug("kv"); if(kv2&&kv2.brand) await kv2.brand.delete(BM_KEY); }catch(e){} LS.del(BM_KEY); refreshBrandUI(); };
   refreshBrandUI();
 
   // ---- IMAGE ----
   let lastImgUrl=null;
   function pushImgHistory(prompt,url){
-    KVB.history.get("imgs").then(async (arr)=>{
+    var kvh=plug("kv");
+    if(kvh&&kvh.history){ kvh.history.get("imgs").then(async (arr)=>{
       arr=arr||[];
       arr.unshift({prompt,url,at:new Date().toISOString()});
       arr=arr.slice(0,12);
-      try{await KVB.history.set("imgs",arr);}catch(e){}
+      try{await kvh.history.set("imgs",arr);}catch(e){}
       renderImgHistory(arr);
-    }).catch(()=>{});
+    }).catch(()=>{}); return; }
+    try{
+      var arr2=LS.get("imgs")||[];
+      arr2.unshift({prompt:prompt,url:url,at:new Date().toISOString()});
+      LS.set("imgs",arr2.slice(0,12));
+      renderImgHistory(arr2.slice(0,12));
+    }catch(e){}
   }
   async function renderImgHistory(arr){
-    try{ arr=arr||await KVB.history.get("imgs")||[]; }catch(e){arr=[];}
+    try{ var kvh2=plug("kv"); arr=arr||(kvh2&&kvh2.history?await kvh2.history.get("imgs"):LS.get("imgs"))||[]; }catch(e){ try{arr=LS.get("imgs")||[];}catch(ee){arr=[];} }
     const box=$("imgHistory");
     if(!arr.length){box.innerHTML='<div class="muted">ยังไม่มีประวัติ — สร้างภาพแรกได้เลย</div>';return;}
     box.innerHTML="";
@@ -574,22 +698,35 @@
     });
   }
   renderImgHistory();
-  $("imgClearHist").onclick=async()=>{await KVB.history.delete("imgs");renderImgHistory();};
+  $("imgClearHist").onclick=async()=>{ try{ var kvh3=plug("kv"); if(kvh3&&kvh3.history) await kvh3.history.delete("imgs"); }catch(e){} LS.del("imgs"); renderImgHistory([]); };
 
   $("imgGenBtn").onclick=async()=>{
-    if(!needPlugins())return;
     const btn=$("imgGenBtn"); btn.disabled=true;
     const box=$("imgResult"); lastImgUrl=null; $("imgDlBtn").disabled=true;
     box.innerHTML='<div><div class="spinner"></div><div class="loadline">กำลังวาดภาพ<span class="dots"></span> (10–40 วินาที)</div></div>';
-    $("imgStatus").textContent="กำลังสร้าง...";
+    $("imgStatus").textContent="⏳ กำลังเตรียม...";
     try{
-      const b=await getBrand();
+      var plugs=await ensurePlugs(["generateImage"],$("imgStatus"));
+      var b=await getBrand();
       const base=$("imgPromptInput").value.trim()||"beautiful cozy cafe";
       const styles=selectedStyles("styleChips");
       const full=`${base}, ${styles}${b.style?`, ${b.style}`:""}${b.colors?`, brand colors ${b.colors}`:""}`;
       const ratio=$("imgRatioSel").value||"768x768";
       const neg=$("imgNegInput").value.trim();
-      const r=await GImg(full,{resolution:ratio,negativePrompt:neg||undefined});
+      if(!plugs){
+        $("imgStatus").textContent="🌐 ใช้รูปสำรอง (โหมดเว็บนอก)...";
+        var fbUrl=pollinationsImageUrl(full,ratio);
+        box.innerHTML="";
+        var fimg=document.createElement("img");
+        fimg.src=fbUrl; fimg.alt=full; fimg.style.width="100%"; fimg.style.height="auto";
+        box.appendChild(fimg);
+        lastImgUrl=fbUrl;
+        $("imgDlBtn").disabled=false;
+        $("imgStatus").textContent="✅ เสร็จแล้ว (รูปสำรอง — บน perchance.org จะได้ตัวหลัก)";
+        pushImgHistory(full, fbUrl);
+        btn.disabled=false; return;
+      }
+      var r=await plugs.generateImage(full,{resolution:ratio,negativePrompt:neg||undefined});
       box.innerHTML="";
       const img=document.createElement("img");
       img.src=r.dataUrl; img.alt=full; img.style.width="100%"; img.style.height="auto";
@@ -606,7 +743,14 @@
   };
   $("imgDlBtn").onclick=()=>{
     if(!lastImgUrl) return;
-    const a=document.createElement("a"); a.href=lastImgUrl; a.download="auddy-tom-studio.png"; a.click();
+    if(lastImgUrl.indexOf("data:")===0){
+      const a=document.createElement("a"); a.href=lastImgUrl; a.download="auddy-tom-studio.png"; a.click(); return;
+    }
+    fetch(lastImgUrl).then(function(res){return res.blob();}).then(function(blob){
+      var url=URL.createObjectURL(blob);
+      var a=document.createElement("a"); a.href=url; a.download="auddy-tom-studio.png"; a.click();
+      setTimeout(function(){URL.revokeObjectURL(url);},10000);
+    }).catch(function(){ window.open(lastImgUrl,"_blank"); });
   };
 
   // ---- TEXT (streaming, cancellable) ----
@@ -619,24 +763,44 @@
     story:"เขียนเรื่องสั้นภาษาไทย 300-500 คำ เปิดเรื่องดึงดูด จบประทับใจ"
   };
   $("txtGenBtn").onclick=async()=>{
-    if(!needPlugins())return;
     if(txtHandle&&txtHandle.stop) try{txtHandle.stop();}catch(e){}
     const topic=$("txtTopicInput").value.trim()||"สินค้าใหม่";
     const type=$("txtTypeSel").value;
     const tone=singleSelected("toneChips")||"เป็นกันเอง";
-    const b=await getBrand();
-    const instruction=`งาน: ${TYPE_PROMPT[type]}\nหัวข้อ/บรีฟ: ${topic}\nโทนเสียง: ${tone}${b.tone?` (brand tone: ${b.tone})`:""}${b.name?`\nแบรนด์: ${b.name}`:""}${b.avoid?`\nข้อห้าม: ${b.avoid}`:""}\nภาษา: ภาษาไทยเป็นหลัก อ่านง่าย ขายได้จริง ห้ามมีลิงก์ปลอม ห้ามอ้าง URL ถ้าไม่จำเป็น`;
+    var b0={}; try{ b0=await getBrand(); }catch(e){}
+    var instruction0=`งาน: ${TYPE_PROMPT[type]}\nหัวข้อ/บรีฟ: ${topic}\nโทนเสียง: ${tone}${b0.tone?` (brand tone: ${b0.tone})`:""}${b0.name?`\nแบรนด์: ${b0.name}`:""}${b0.avoid?`\nข้อห้าม: ${b0.avoid}`:""}\nภาษา: ภาษาไทยเป็นหลัก อ่านง่าย ขายได้จริง ห้ามมีลิงก์ปลอม ห้ามอ้าง URL ถ้าไม่จำเป็น`;
     const out=$("txtOut"); out.textContent="";
-    $("txtStatus").textContent="กำลังเขียน..."; $("txtStopBtn").disabled=false; $("txtGenBtn").disabled=true;
+    $("txtStatus").textContent="⏳ กำลังเตรียม..."; $("txtStopBtn").disabled=false; $("txtGenBtn").disabled=true;
     try{
-      const p=GText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar;}});
+      var plugs=await ensurePlugs(["generateText"],$("txtStatus"));
+      if(!plugs){
+        $("txtStatus").textContent="🌐 ปลั๊กอินหลักไม่มา — กำลังลอง AI สำรอง...";
+        try{
+          var fb=await pollinationsText(instruction0,function(d){ out.textContent=d.fullTextSoFar||""; });
+          out.textContent=(fb&&fb.text)||"";
+          $("txtStatus").textContent="✅ เสร็จแล้ว (ผ่าน AI สำรอง)";
+        }catch(fe){
+          out.textContent="⚠️ AI ในเว็บยังไม่พร้อม\n\nก๊อป prompt นี้ไปวางใน ChatGPT / Claude ได้ผลเหมือนกัน:\n\n────────\n"+instruction0;
+          $("txtStatus").textContent="⚠️ ใช้ prompt สำรองด้านบนได้เลย";
+        }
+        $("txtStopBtn").disabled=true; $("txtGenBtn").disabled=false; txtHandle=null; return;
+      }
+      var b=await getBrand();
+      var instruction=`งาน: ${TYPE_PROMPT[type]}\nหัวข้อ/บรีฟ: ${topic}\nโทนเสียง: ${tone}${b.tone?` (brand tone: ${b.tone})`:""}${b.name?`\nแบรนด์: ${b.name}`:""}${b.avoid?`\nข้อห้าม: ${b.avoid}`:""}\nภาษา: ภาษาไทยเป็นหลัก อ่านง่าย ขายได้จริง ห้ามมีลิงก์ปลอม ห้ามอ้าง URL ถ้าไม่จำเป็น`;
+      $("txtStatus").textContent="กำลังเขียน...";
+      const p=plugs.generateText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar||d.textChunk||"";}});
       txtHandle=p;
       const final=await p;
-      out.textContent=final.text||final;
+      out.textContent=(final&&final.text)||String(final||"");
       $("txtStatus").textContent="✅ เสร็จแล้ว";
-      const arr=(await KVB.history.get("texts").catch(()=>null))||[];
-      arr.unshift({topic,type,text:String(final).slice(0,2000),at:new Date().toISOString()});
-      await KVB.history.set("texts",arr.slice(0,10)).catch(()=>{});
+      try{
+        var kvh=plug("kv");
+        if(kvh&&kvh.history){
+          var arr=(await kvh.history.get("texts").catch(function(){return null;}))||[];
+          arr.unshift({topic:topic,type:type,text:String(final).slice(0,2000),at:new Date().toISOString()});
+          await kvh.history.set("texts",arr.slice(0,10)).catch(function(){});
+        }
+      }catch(ee){}
     }catch(e){ out.textContent="❌ เขียนไม่สำเร็จ: "+(e&&e.message?e.message:e); $("txtStatus").textContent="ลองใหม่อีกครั้ง";
     }finally{$("txtStopBtn").disabled=true;$("txtGenBtn").disabled=false;txtHandle=null;}
   };
@@ -659,68 +823,114 @@
     });
   }
   $("uiGenBtn").onclick=async()=>{
-    if(!needPlugins())return;
     const idea=$("uiIdeaInput").value.trim()||"แอปใหม่";
-    const b=await getBrand();
-    paintPalette(paletteFor(idea+(b.colors||"")));
+    var b0={}; try{ b0=await getBrand(); }catch(e){}
+    paintPalette(paletteFor(idea+(b0.colors||"")));
     const out=$("uiOut"); out.textContent=""; $("uiStatus").textContent="กำลังออกแบบ..."; $("uiGenBtn").disabled=true;
-    const instruction=`คุณคือนักออกแบบ UI/UX อาวุโส ตอบเป็นภาษาไทย โครงสร้าง:\n1) สรุปแนวคิด 1 ย่อหน้า\n2) ผู้ใช้ 3 กลุ่ม + งานหลักของแต่ละกลุ่ม\n3) โครงหน้า 5 จอ (ชื่อจอ / องค์ประกอบ / CTA)\n4) UX flow 6 ขั้น\n5) พาเลตต์สี 4 สี (hex) + ฟอนต์แนะนำ\n6) 3 หลัก UX ที่ต้องระวัง\n7) image prompt ภาษาอังกฤษ 1 ย่อหน้าสำหรับทำ moodboard\nไอเดีย: ${idea}${b.name?`\nแบรนด์: ${b.name}, โทน ${b.tone||"-"}, สี ${b.colors||"-"}, ห้าม ${b.avoid||"-"}`:""}\nห้ามใส่ลิงก์ปลอม`;
     try{
-      const r=await GText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar;}});
-      out.textContent=r.text||r; $("uiStatus").textContent="✅ เสร็จแล้ว";
+      var plugs=await ensurePlugs(["generateText"],$("uiStatus"));
+      var b=await getBrand();
+      var instruction=`คุณคือนักออกแบบ UI/UX อาวุโส ตอบเป็นภาษาไทย โครงสร้าง:\n1) สรุปแนวคิด 1 ย่อหน้า\n2) ผู้ใช้ 3 กลุ่ม + งานหลักของแต่ละกลุ่ม\n3) โครงหน้า 5 จอ (ชื่อจอ / องค์ประกอบ / CTA)\n4) UX flow 6 ขั้น\n5) พาเลตต์สี 4 สี (hex) + ฟอนต์แนะนำ\n6) 3 หลัก UX ที่ต้องระวัง\n7) image prompt ภาษาอังกฤษ 1 ย่อหน้าสำหรับทำ moodboard\nไอเดีย: ${idea}${b.name?`\nแบรนด์: ${b.name}, โทน ${b.tone||"-"}, สี ${b.colors||"-"}, ห้าม ${b.avoid||"-"}`:""}\nห้ามใส่ลิงก์ปลอม`;
+      if(!plugs){
+        $("uiStatus").textContent="🌐 ปลั๊กอินหลักไม่มา — กำลังลอง AI สำรอง...";
+        var fb=await pollinationsText(instruction,function(d){ out.textContent=d.fullTextSoFar||""; });
+        out.textContent=(fb&&fb.text)||""; $("uiStatus").textContent="✅ เสร็จแล้ว (ผ่าน AI สำรอง)";
+      }else{
+        var r=await plugs.generateText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar||d.textChunk||"";}});
+        out.textContent=(r&&r.text)||String(r||""); $("uiStatus").textContent="✅ เสร็จแล้ว";
+      }
     }catch(e){out.textContent="❌ เกิดข้อผิดพลาด: "+(e&&e.message?e.message:e);}
     finally{$("uiGenBtn").disabled=false;}
   };
   $("uiCopyBtn").onclick=async()=>{try{await navigator.clipboard.writeText($("uiOut").textContent);$("uiStatus").textContent="📋 คัดลอกแล้ว";}catch(e){}};
   $("uiMoodBtn").onclick=async()=>{
-    if(!needPlugins())return;
     const idea=$("uiIdeaInput").value.trim();
     const box=$("uiImgResult"); box.hidden=false;
     box.innerHTML='<div><div class="spinner"></div><div class="loadline">กำลังวาดมู้ดบอร์ด<span class="dots"></span></div></div>';
     try{
-      const b=await getBrand();
-      const r=await GImg(`app UI moodboard collage, ${idea}, clean minimal, ${b.style||"modern soft"}, high quality`,{resolution:"768x512"});
+      var plugs=await ensurePlugs(["generateImage"],null);
+      var b=await getBrand();
+      var prompt=`app UI moodboard collage, ${idea}, clean minimal, ${b.style||"modern soft"}, high quality`;
+      if(!plugs){
+        var fbUrl=pollinationsImageUrl(prompt,"768x512");
+        box.innerHTML=""; var fimg=document.createElement("img"); fimg.src=fbUrl; fimg.style.width="100%"; box.appendChild(fimg);
+        return;
+      }
+      const r=await plugs.generateImage(prompt,{resolution:"768x512"});
       box.innerHTML=""; const im=document.createElement("img"); im.src=r.dataUrl; im.style.width="100%"; box.appendChild(im);
     }catch(e){box.innerHTML='<div class="muted" style="padding:16px">วาดมู้ดบอร์ดไม่สำเร็จ ลองใหม่อีกครั้ง</div>';}
   };
 
   // ---- VIDEO ----
   $("vidGenBtn").onclick=async()=>{
-    if(!needPlugins())return;
     const idea=$("vidIdeaInput").value.trim()||"โฆษณาสินค้า";
     const len=$("vidLenSel").value;
-    const b=await getBrand();
+    var b0={}; try{ b0=await getBrand(); }catch(e0){}
     const out=$("vidOut"); out.textContent=""; $("vidStatus").textContent="กำลังแตกช็อต..."; $("vidGenBtn").disabled=true;
-    const instruction=`คุณคือผู้กำกับโฆษณา เขียนสตอรี่บอร์ดภาษาไทย สำหรับวิดีโอ "${idea}" ความยาว ${len}\nโครง: ตารางช็อต (เวลา/ภาพ/มุมกล้อง/เสียง/บทพูด) 6-10 ช็อต, shot list ถ่ายจริง, prompt ภาษาอังกฤษ 3 อันสำหรับเครื่องมือ AI video (เช่น runway/pika), เพลง/ซาวด์แนะนำ\n${b.name?`แบรนด์ ${b.name} โทน ${b.tone||""}`:""}\nห้ามใส่ลิงก์จริง ให้บอกชื่อเครื่องมือเป็นข้อความเท่านั้น`;
+    var instruction=`คุณคือผู้กำกับโฆษณา เขียนสตอรี่บอร์ดภาษาไทย สำหรับวิดีโอ "${idea}" ความยาว ${len}\nโครง: ตารางช็อต (เวลา/ภาพ/มุมกล้อง/เสียง/บทพูด) 6-10 ช็อต, shot list ถ่ายจริง, prompt ภาษาอังกฤษ 3 อันสำหรับเครื่องมือ AI video (เช่น runway/pika), เพลง/ซาวด์แนะนำ\n${b0.name?`แบรนด์ ${b0.name} โทน ${b0.tone||""}`:""}\nห้ามใส่ลิงก์จริง ให้บอกชื่อเครื่องมือเป็นข้อความเท่านั้น`;
     try{
-      const r=await GText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar;}});
-      out.textContent=r.text||r; $("vidStatus").textContent="✅ เสร็จแล้ว เอา prompt ไปวางในเครื่องมือวิดีโอได้เลย";
-    }catch(e){out.textContent="❌ "+(e&&e.message?e.message:e);}
+      var plugs=await ensurePlugs(["generateText"],$("vidStatus"));
+      if(!plugs){
+        $("vidStatus").textContent="🌐 ปลั๊กอินหลักไม่มา — กำลังลอง AI สำรอง...";
+        try{
+          var fb=await pollinationsText(instruction,function(d){ out.textContent=d.fullTextSoFar||""; });
+          out.textContent=(fb&&fb.text)||"";
+          $("vidStatus").textContent="✅ เสร็จแล้ว (ผ่าน AI สำรอง)";
+        }catch(fe){
+          out.textContent="⚠️ AI ในเว็บยังไม่พร้อม\n\nก๊อป prompt นี้ไปวางใน ChatGPT / Claude ได้เลย:\n\n────────\n"+instruction;
+          $("vidStatus").textContent="⚠️ ใช้ prompt สำรองได้เลย";
+        }
+      }else{
+        var r=await plugs.generateText({instruction,onChunk:(d)=>{out.textContent=d.fullTextSoFar||d.textChunk||"";}});
+        out.textContent=(r&&r.text)||String(r||""); $("vidStatus").textContent="✅ เสร็จแล้ว เอา prompt ไปวางในเครื่องมือวิดีโอได้เลย";
+      }
+    }catch(e){
+      try{
+        $("vidStatus").textContent="🌐 ตัวหลักสะดุด — กำลังลอง AI สำรอง...";
+        var fb2=await pollinationsText(instruction,function(d){ out.textContent=d.fullTextSoFar||""; });
+        out.textContent=(fb2&&fb2.text)||"";
+        $("vidStatus").textContent="✅ เสร็จแล้ว (ผ่าน AI สำรอง)";
+      }catch(fe2){ out.textContent="❌ "+(e&&e.message?e.message:e); }
+    }
     finally{$("vidGenBtn").disabled=false;}
   };
   $("vidCopyBtn").onclick=async()=>{try{await navigator.clipboard.writeText($("vidOut").textContent);$("vidStatus").textContent="📋 คัดลอกแล้ว";}catch(e){}};
 
   // ---- 3D ----
   $("tdPromptBtn").onclick=async()=>{
-    if(!needPlugins())return;
     const obj=$("tdObjInput").value.trim()||"cute robot";
     const st=singleSelected("tdStyleChips");
-    const b=await getBrand();
+    var b={}; try{ b=await getBrand(); }catch(e0){}
+    var instruction=`Write ONE excellent English text-to-3d / text-to-image 3D render prompt for: "${obj}". Style: ${st}. Include: subject detail, materials, lighting, camera angle, background, quality keywords (octane, 8k, subsurface scattering...), negative prompt line. Then Thai explanation 3 บรรทัดว่าทำไม prompt นี้ดี. Brand context: ${b.style||"-"}. No fake links.`;
     $("tdStatus").textContent="กำลังเขียน prompt...";
     try{
-      const r=await GText({instruction:`Write ONE excellent English text-to-3d / text-to-image 3D render prompt for: "${obj}". Style: ${st}. Include: subject detail, materials, lighting, camera angle, background, quality keywords (octane, 8k, subsurface scattering...), negative prompt line. Then Thai explanation 3 บรรทัดว่าทำไม prompt นี้ดี. Brand context: ${b.style||"-"}. No fake links.`});
-      $("tdOut").textContent=r.text||r; $("tdStatus").textContent="✅ ได้ prompt แล้ว — กดสร้างภาพพรีวิวได้เลย";
-    }catch(e){$("tdOut").textContent="❌ "+(e&&e.message?e.message:e);}
+      var plugs=await ensurePlugs(["generateText"],$("tdStatus"));
+      if(!plugs){
+        $("tdStatus").textContent="🌐 กำลังลอง AI สำรอง...";
+        var fb=await pollinationsText(instruction);
+        $("tdOut").textContent=(fb&&fb.text)||""; $("tdStatus").textContent="✅ ได้ prompt แล้ว (ผ่าน AI สำรอง)";
+      }else{
+        var r=await plugs.generateText({instruction:instruction});
+        $("tdOut").textContent=(r&&r.text)||String(r||""); $("tdStatus").textContent="✅ ได้ prompt แล้ว — กดสร้างภาพพรีวิวได้เลย";
+      }
+    }catch(e){$("tdOut").textContent="❌ "+(e&&e.message?e.message:e+" — หรือก๊อปไปวางใน ChatGPT ได้เลย:\n"+instruction);}
   };
   $("tdImgBtn").onclick=async()=>{
-    if(!needPlugins())return;
     const obj=$("tdObjInput").value.trim()||"cute robot";
     const st=singleSelected("tdStyleChips");
     const box=$("tdImgResult"); box.hidden=false;
     box.innerHTML='<div><div class="spinner"></div><div class="loadline">กำลังเรนเดอร์พรีวิว<span class="dots"></span></div></div>';
     $("tdStatus").textContent="กำลังสร้างภาพ...";
     try{
-      const r=await GImg(`${obj}, ${st}, centered, studio lighting, high detail, masterpiece`,{resolution:"768x768"});
+      var plugs2=await ensurePlugs(["generateImage"],$("tdStatus"));
+      var prompt2=`${obj}, ${st}, centered, studio lighting, high detail, masterpiece`;
+      if(!plugs2){
+        var fbUrl=pollinationsImageUrl(prompt2,"768x768");
+        box.innerHTML=""; var fimg=document.createElement("img"); fimg.src=fbUrl; fimg.style.width="100%"; box.appendChild(fimg);
+        $("tdStatus").textContent="✅ เสร็จแล้ว (รูปสำรอง)";
+        return;
+      }
+      const r=await plugs2.generateImage(prompt2,{resolution:"768x768"});
       box.innerHTML=""; const im=document.createElement("img"); im.src=r.dataUrl; im.style.width="100%"; box.appendChild(im);
       $("tdStatus").textContent="✅ เสร็จแล้ว";
     }catch(e){box.innerHTML='<div class="muted" style="padding:16px">สร้างไม่สำเร็จ ลองใหม่อีกครั้ง</div>';}
@@ -929,12 +1139,15 @@
   $("motStopBtn").onclick=motStop;
   $("motDurSel").onchange=motBuildFromInput;$("motSpeedSel").onchange=()=>{ML.speed=parseFloat($("motSpeedSel").value)||1;};
   $("motAiBtn").onclick=async()=>{
-    if(!needPlugins())return;
     const wish=$("motCmdInput").value.trim()||"ฟีลหนังอบอุ่น";
     $("motStatus").textContent="🤖 AI กำลังออกแบบโมชั่น...";
     try{
-      const r=await GText({instruction:`You are a motion-graphics director. User wish (Thai allowed): "${wish}". Output ONLY compact JSON, no markdown, no explanation: {"moves":[{"type":"zoom|pan|rotate|spin|shake|bounce|fade","dir":"in|out|left|right|up|down|cw|ccw","amount":1|2|3}],"duration":4-8,"boomerang":true}. Max 4 moves.`});
-      const m=String(r.text||r).match(/\{[\s\S]*\}/);
+      var plugs=await ensurePlugs(["generateText"],$("motStatus"));
+      var instruction=`You are a motion-graphics director. User wish (Thai allowed): "${wish}". Output ONLY compact JSON, no markdown, no explanation: {"moves":[{"type":"zoom|pan|rotate|spin|shake|bounce|fade","dir":"in|out|left|right|up|down|cw|ccw","amount":1|2|3}],"duration":4-8,"boomerang":true}. Max 4 moves.`;
+      var r;
+      if(!plugs){ r=await pollinationsText(instruction); }
+      else { r=await plugs.generateText({instruction:instruction}); }
+      const m=String((r&&r.text)||r).match(/\{[\s\S]*\}/);
       if(!m)throw new Error("no-json");
       motBuildFromSpec(JSON.parse(m[0]));
       $("motStatus").textContent="🤖 AI ออกแบบให้แล้ว — กดเล่นได้เลย";
@@ -966,10 +1179,13 @@
   };
 
   // ---- Gallery ----
-  function renderGallery(sort){
+  async function renderGallery(sort){
     const box=$("galleryBox"); box.innerHTML='<div class="muted" style="padding:18px">กำลังโหลดแกลเลอรี...</div>';
+    if(!isPerchanceEnv()){ box.innerHTML='<div class="muted" style="padding:18px">🌐 โหมดเว็บนอกไม่มีแกลเลอรีสาธารณะของ Perchance — ประวัติรูปของคุณดูได้ที่เมนู “🎨 สร้างภาพ” ด้านบน (เก็บในเครื่อง)</div>'; return; }
     try{
-      box.innerHTML=GImg({gallery:true,sort:sort||"recent",adaptiveHeight:true});
+      var GImg=await waitPlug("generateImage",20000);
+      if(!GImg){ box.innerHTML='<div class="muted" style="padding:18px">❌ ปลั๊กอินรูปยังไม่มา — รอป้ายมุมขวาบนเป็น 🟢 แล้วกดอีกครั้ง</div>'; return; }
+      box.innerHTML=await GImg({gallery:true,sort:sort||"recent",adaptiveHeight:true});
     }catch(e){box.innerHTML='<div class="muted" style="padding:18px">โหลดแกลเลอรีไม่ได้ตอนนี้ (ยังไม่มีภาพที่เซฟ หรือเครือข่ายขัดข้อง)</div>';}
   }
   $("galRecent").onclick=()=>renderGallery("recent");
